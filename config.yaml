@@ -1,0 +1,4 @@
+# configuration for the s3 object qc
+
+job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/s3-data-qc-ops.git"
+job_queue_dir: test-bam-qc  # production is bam-qc
