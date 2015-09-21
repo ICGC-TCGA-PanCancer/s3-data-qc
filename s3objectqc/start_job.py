@@ -57,11 +57,11 @@ def start_next_job(conf):
                 stderr=subprocess.PIPE
             )
         out, err = process.communicate()
-        print ('return code {}'.format(process.returncode))
 
         if process.returncode == 0:
             break  # succeeded
         else:
+            print('Unable to fetch new job.\nError message: {}\n\nRetrying...'.format(err))
             time.sleep(randint(1,10))  # pause a few seconds before retry
 
     return job_file
