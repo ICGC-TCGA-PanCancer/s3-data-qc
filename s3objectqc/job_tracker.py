@@ -4,15 +4,15 @@ import sys
 from random import randint
 import time
 
-def start_next_job(conf):
-    git_local_dir = conf.get('git_local_dir')
+
+def start_a_job(conf, next_step_name):
     job_queue_dir = conf.get('job_queue_dir')
 
     job_file = ''
 
     for i in range(5): # try at most 5 times
         # step 1: syn up with github
-        command = 'cd {} && '.format(git_local_dir) + \
+        command = 'cd {} && '.format(job_queue_dir) + \
                   'git checkout master && ' + \
                   'git reset --hard origin/master && ' + \
                   'git pull'
@@ -25,7 +25,7 @@ def start_next_job(conf):
         out, err = process.communicate()
 
         # step 2: find next job json file
-        command = 'cd {} && '.format(os.path.join(git_local_dir, job_queue_dir, 'queued-jobs')) + \
+        command = 'cd {} && '.format(os.path.join(job_queue_dir, 'queued-jobs')) + \
                   'find . -name "*.json" |head -1|awk -F"/" \'{print $2}\' '
 
         process = subprocess.Popen(
@@ -44,10 +44,10 @@ def start_next_job(conf):
             continue  # try again
 
         # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
-        command = 'cd {} && '.format(os.path.join(git_local_dir, job_queue_dir)) + \
-                  'git mv {} {} && '.format(os.path.join(git_local_dir, job_queue_dir, 'queued-jobs', job_file),
-                                            os.path.join(git_local_dir, job_queue_dir, 'downloading-jobs', job_file)) + \
-                  'git commit -m \'downloading: {}\' && '.format(job_file) + \
+        command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
+                  'git mv {} {} && '.format(os.path.join(job_queue_dir, 'queued-jobs', job_file),
+                                            os.path.join(job_queue_dir, next_step_name + '-jobs', job_file)) + \
+                  'git commit -m \'{}: {}\' && '.format(next_step_name, job_file) + \
                   'git push'
 
         process = subprocess.Popen(
@@ -65,4 +65,17 @@ def start_next_job(conf):
             time.sleep(randint(1,10))  # pause a few seconds before retry
 
     return job_file
+    
+    
+def get_job_json(conf, current_step_name, job_json_file_name):
+    pass
 
+
+def update_job_json(conf, current_step_name, job_json_file_name, job_json):
+    pass
+
+
+def move_to_next_step(conf, current_step_name, next_step_name, job_json_file_name):
+    print ('move from {} to {}'.format(current_step_name, next_step_name))
+
+    # to be implemented
