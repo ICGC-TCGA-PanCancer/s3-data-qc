@@ -56,7 +56,8 @@ def get_config(file):
 
     conf.update({
         'output_dir': output_dir,
-        'git_local_dir': git_local_dir        
+        'git_local_dir': git_local_dir,
+        'job_queue_dir': os.path.join(git_local_dir, conf.get('job_queue_dir'))
         })
 
     git_clone(conf)
