@@ -21,7 +21,7 @@ class Job:
             # better exception to be added
             return
 
-        print ('running job: {}'.format(self.job_json_file))
+        print ('\nrunning job: {}'.format(self.job_json_file))
 
         for task in self.tasks:
             # better logging to be added

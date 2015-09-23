@@ -22,7 +22,7 @@ def main(args=None):
             break
 
     # better logging to be added
-    print('No job or unable to fetch job in the queue, stop now.')
+    print('\nNo job or unable to fetch job in the queue, stop now.\n')
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from ..job_tracker import move_to_next_step, get_job_json, update_job_json
+from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 
 name = 'downloading'
 next_step = 'slicing'

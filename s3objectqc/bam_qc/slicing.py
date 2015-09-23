@@ -1,4 +1,4 @@
-from ..job_tracker import move_to_next_step, get_job_json, update_job_json
+from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 
 name = 'slicing'
 next_step = None
@@ -13,6 +13,6 @@ def run(conf, job_json_file):
 
     # many steps here
 
-    # finally move the job json file to the next step
+    # if everything was fine, finally move the job json file to the success folder
     move_to_next_step(conf, name, 'match', job_json_file)
 
