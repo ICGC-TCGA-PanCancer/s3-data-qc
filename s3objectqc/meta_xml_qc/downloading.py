@@ -3,7 +3,7 @@ from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 
 
 name = 'downloading'
-next_step = 'slicing'
+next_step = None
 
 def get_name():
     global name
@@ -27,4 +27,4 @@ def run(conf, job_json_file):
 
 
     # if everything was fine, finally move the job json file to the next_step folder
-    move_to_next_step(conf, name, next_step, job_json_file)
+    move_to_next_step(conf, name, 'match', job_json_file)

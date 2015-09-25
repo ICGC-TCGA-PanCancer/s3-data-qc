@@ -1,2 +1,1 @@
-import downloading
-import slicing
+from job import BAM_QC
