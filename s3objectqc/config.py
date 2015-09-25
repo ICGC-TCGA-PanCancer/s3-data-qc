@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+import uuid
 import time
 import calendar
 from random import randint
@@ -10,20 +11,21 @@ def _create_output_dir(file):
     # output dir is under the same dir as the config file
     conf_dir = os.path.dirname(os.path.abspath(file))
     epoch_time = str(int(calendar.timegm(time.gmtime())))
+    uuid_str = str(uuid.uuid4())
 
     # need to ensure we don't overwrite previous output (if exists)
     # run the loop until the output dir does not exist
-    while os.path.isdir(os.path.join(conf_dir, 'output_' + epoch_time)):
+    while os.path.isdir(os.path.join(conf_dir, 'worker_' + epoch_time + '_' + uuid_str)):
     	time.sleep(randint(1,10))
     	epoch_time = str(int(calendar.timegm(time.gmtime())))
 
-    output_dir = os.path.join(conf_dir, 'output_' + epoch_time)
+    output_dir = os.path.join(conf_dir, 'worker_' + epoch_time + '_' + uuid_str)
     os.makedirs(output_dir)
 
     return output_dir
 
 
-def git_clone(conf):
+def _git_clone(conf):
     git_url = conf.get('job_git_repo')
     output_dir = conf.get('output_dir')
 
@@ -47,6 +49,7 @@ def get_config(file):
 
     # stop if conf does not include job_git_repo
     if not conf.get('job_git_repo'): sys.exit('Error: job_git_repo must be set in the configuration file!')
+    if not conf.get('job_type'): sys.exit('Error: job_type must be set in the configuration file!')
 
     output_dir = _create_output_dir(file)
 
@@ -55,11 +58,11 @@ def get_config(file):
                                 )
 
     conf.update({
-        'output_dir': output_dir,
-        'git_local_dir': git_local_dir,
-        'job_queue_dir': os.path.join(git_local_dir, conf.get('job_queue_dir'))
+            'output_dir': output_dir,
+            'git_local_dir': git_local_dir,
+            'job_queue_dir': os.path.join(git_local_dir, conf.get('job_queue_dir'))
         })
 
-    git_clone(conf)
+    _git_clone(conf)
 
     return conf
