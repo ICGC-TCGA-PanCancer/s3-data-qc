@@ -125,18 +125,9 @@ def run(conf, job):
     print ('running task: {}'.format(get_name()))
 
     # many steps here
-    if not job.job_json.get('_runs_'):
-        job.job_json['_runs_'] = {
-            conf.get('worker_id'): { name: {} }
-        }
-    else:
-        job.job_json.get('_runs_').update({
-            conf.get('worker_id'): { name: {} }
-        })
-
-    job.job_json.get('_runs_').get(conf.get('worker_id')).get(name).update({
-            'start': int(calendar.timegm(time.gmtime()))
-        })
+    job.job_json.get('_runs_').get(conf.get('worker_id'))[name] = {
+        'start': int(calendar.timegm(time.gmtime()))
+    }
 
     ret = compare_file(conf, job)
 

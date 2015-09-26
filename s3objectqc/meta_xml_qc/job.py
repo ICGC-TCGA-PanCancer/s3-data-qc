@@ -35,6 +35,14 @@ class META_XML_QC(Job):
             return
 
         print ('\nrunning job: {}'.format(self.job_json_file))
+        if not self.job_json.get('_runs_'):
+            self.job_json['_runs_'] = {
+                self.conf.get('worker_id'): {}
+            }
+        else:
+            self.job_json.get('_runs_').update({
+                self.conf.get('worker_id'): {}
+            })
 
         for task in self.tasks:
             # better logging to be added
