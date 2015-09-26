@@ -8,8 +8,9 @@ def load_job_class(job_type):
     try:
         job_module = __import__(job_type.lower() + '.job', globals(), locals(), [], -1)
         job_class = getattr(job_module, job_type.upper())
-    except:
-        sys.exit('Unable to load specified job type: {}!\n'.format(job_type))
+    except Exception as e:
+        sys.exit('Unable to load specified job type: {}. Error: {}!\n'\
+            .format(job_type, e.message))
 
     return job_class
 

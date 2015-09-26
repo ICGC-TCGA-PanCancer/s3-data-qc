@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+import json
 from random import randint
 import time
 
@@ -69,12 +70,37 @@ def start_a_job(conf, next_step_name):
     
 # this function retrieves the job_json_file and parse it and return
 def get_job_json(conf, current_step_name, job_json_file_name):
-    pass
+    json_file = os.path.join(conf.get('job_queue_dir'),
+                                current_step_name + '-jobs',
+                                job_json_file_name)
+
+    with open(json_file) as data_file:
+        json_obj = json.load(data_file)
+        return json_obj
 
 
 # this function serialize the job_json (after some updates) to job_json_file
 def save_job_json(conf, current_step_name, job_json_file_name, job_json):
-    pass
+    json_file = os.path.join(conf.get('job_queue_dir'),
+                                current_step_name + '-jobs',
+                                job_json_file_name)
+
+    with open(json_file, 'w') as f:
+        f.write(json.dumps(job_json, indent=4, sort_keys=True))
+
+    command = 'cd {} && '.format(conf.get('job_queue_dir')) + \
+              'git add {} && '.format(json_file) + \
+              'git commit -m \'save info at {}: {}\' && '.format(current_step_name,
+                                                            job_json_file_name) + \
+              'git push'
+
+    process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+    out, err = process.communicate()
 
 
 def move_to_next_step(conf, current_step_name, next_step_name, job_json_file_name):

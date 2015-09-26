@@ -6,7 +6,8 @@ setup(
     description='Perform various QC on S3 objects',
     packages=['s3objectqc'],
     install_requires=[
-      'pyyaml'
+      'pyyaml',
+      'xmltodict'
     ],
     entry_points='''
     [console_scripts]
