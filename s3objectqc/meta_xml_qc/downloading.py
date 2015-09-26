@@ -17,7 +17,7 @@ def get_name():
     return name
 
 
-def compare_file(conf, job):
+def compare_file(job):
     # get file size
     file_info = get_file_info(job.job_json)
 
@@ -33,22 +33,22 @@ def compare_file(conf, job):
 
         return True
     else:
-        job.job_json.get('_runs_').get(conf.get('worker_id')).get(name).update({
+        job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(name).update({
                 's3_bam_size': s3_file_info.get('s3_bam_size'),
                 's3_bam_md5': s3_file_info.get('s3_bam_md5'),
                 's3_bai_size': s3_file_info.get('s3_bai_size'),
                 's3_bai_md5': s3_file_info.get('s3_bai_md5')
             })
 
-        generate_correct_json_file(conf, job, s3_file_info)
+        generate_correct_json_file(job, s3_file_info)
 
         return False
 
 
-def generate_correct_json_file(conf, job, s3_file_info):
+def generate_correct_json_file(job, s3_file_info):
     job_json_file_name = job.job_json_file
     global name
-    new_json_obj = get_job_json(conf, name, job_json_file_name)
+    new_json_obj = get_job_json(job.conf, name, job_json_file_name)
 
     # remove possible _runs_ data
     if new_json_obj.get('_runs_'): del new_json_obj['_runs_']
@@ -120,33 +120,33 @@ def download_xml_get_s3_file_info(job_dir, object_id, file_name):
         return file_info
 
 
-def run(conf, job):
+def run(job):
     global name, next_step
     print ('running task: {}'.format(get_name()))
 
     # many steps here
-    job.job_json.get('_runs_').get(conf.get('worker_id'))[name] = {
+    job.job_json.get('_runs_').get(job.conf.get('worker_id'))[name] = {
         'start': int(calendar.timegm(time.gmtime()))
     }
 
-    ret = compare_file(conf, job)
+    ret = compare_file(job)
 
     if not ret: # file does not match
-        job.job_json.get('_runs_').get(conf.get('worker_id')).get(name).update({
+        job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(name).update({
                 'stop': int(calendar.timegm(time.gmtime()))
             })
 
-        save_job_json(conf, name, job.job_json_file, job.job_json)
+        save_job_json(job.conf, name, job.job_json_file, job.job_json)
 
-        move_to_next_step(conf, name, 'mismatch', job.job_json_file)
+        move_to_next_step(job.conf, name, 'mismatch', job.job_json_file)
 
         return False
 
-    job.job_json.get('_runs_').get(conf.get('worker_id')).get(name).update({
+    job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(name).update({
             'stop': int(calendar.timegm(time.gmtime()))
         })
 
-    save_job_json(conf, name, job.job_json_file, job.job_json)
+    save_job_json(job.conf, name, job.job_json_file, job.job_json)
 
     # if everything was fine, finally move the job json file to the next_step folder
-    move_to_next_step(conf, name, 'match', job.job_json_file)
+    move_to_next_step(job.conf, name, 'match', job.job_json_file)

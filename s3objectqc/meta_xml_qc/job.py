@@ -46,7 +46,7 @@ class META_XML_QC(Job):
 
         for task in self.tasks:
             # better logging to be added
-            ret = task.run(self.conf, self)
+            ret = task.run(self)
             if not ret: # step terminated before reaching the end
                 break
 

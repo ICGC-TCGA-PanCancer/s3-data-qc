@@ -5,6 +5,7 @@ import json
 from random import randint
 import time
 
+#TODO: reduce number of parameters by using 'job'
 
 def start_a_job(conf, next_step_name):
     job_queue_dir = conf.get('job_queue_dir')
