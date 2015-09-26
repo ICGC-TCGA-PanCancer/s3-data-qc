@@ -5,10 +5,10 @@ import json
 from random import randint
 import time
 
-#TODO: reduce number of parameters by using 'job'
 
-def start_a_job(conf, next_step_name):
-    job_queue_dir = conf.get('job_queue_dir')
+def start_a_job(job):
+    job_queue_dir = job.conf.get('job_queue_dir')
+    next_step_name = job.tasks[0].get_name() # first task of the job
 
     job_file = ''
 
@@ -70,7 +70,11 @@ def start_a_job(conf, next_step_name):
     
     
 # this function retrieves the job_json_file and parse it and return
-def get_job_json(conf, current_step_name, job_json_file_name):
+def get_job_json(job):
+    conf = job.conf
+    current_step_name = job.tasks[0].get_name()
+    job_json_file_name = job.job_json_file
+
     json_file = os.path.join(conf.get('job_queue_dir'),
                                 current_step_name + '-jobs',
                                 job_json_file_name)
@@ -81,7 +85,12 @@ def get_job_json(conf, current_step_name, job_json_file_name):
 
 
 # this function serialize the job_json (after some updates) to job_json_file
-def save_job_json(conf, current_step_name, job_json_file_name, job_json):
+def save_job_json(job):
+    conf = job.conf
+    current_step_name = job.tasks[0].get_name()
+    job_json_file_name = job.job_json_file
+    job_json = job.job_json
+
     json_file = os.path.join(conf.get('job_queue_dir'),
                                 current_step_name + '-jobs',
                                 job_json_file_name)
@@ -104,7 +113,11 @@ def save_job_json(conf, current_step_name, job_json_file_name, job_json):
     out, err = process.communicate()
 
 
-def move_to_next_step(conf, current_step_name, next_step_name, job_json_file_name):
+def move_to_next_step(job, next_step_name):
+    conf = job.conf
+    current_step_name = job.tasks[0].get_name()
+    job_json_file_name = job.job_json_file
+
     job_queue_dir = conf.get('job_queue_dir')
 
     print ('move from {} to {}'.format(current_step_name, next_step_name))

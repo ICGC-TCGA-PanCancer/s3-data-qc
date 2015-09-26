@@ -12,12 +12,11 @@ class META_XML_QC(Job):
         self.runable = False
         self.tasks = [downloading]
 
-    	self.job_json_file = start_a_job(self.conf, self.tasks[0].get_name())
+        # starting a job run with its first task
+        self.job_json_file = start_a_job(self)
 
         if self.job_json_file:
-            self.job_json = get_job_json(self.conf,
-                                self.tasks[0].get_name(),
-                                self.job_json_file)
+            self.job_json = get_job_json(self)
 
             # let's use json file name as job id for now
             self.job_id = re.sub(r'\.json$', '', self.job_json_file)

@@ -3,9 +3,9 @@ import os
 import json
 import xmltodict
 import time
-from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 import subprocess
 import calendar
+from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 
 
 name = 'downloading'
@@ -48,7 +48,7 @@ def compare_file(job):
 def generate_correct_json_file(job, s3_file_info):
     job_json_file_name = job.job_json_file
     global name
-    new_json_obj = get_job_json(job.conf, name, job_json_file_name)
+    new_json_obj = get_job_json(job)
 
     # remove possible _runs_ data
     if new_json_obj.get('_runs_'): del new_json_obj['_runs_']
@@ -136,9 +136,11 @@ def run(job):
                 'stop': int(calendar.timegm(time.gmtime()))
             })
 
-        save_job_json(job.conf, name, job.job_json_file, job.job_json)
+        save_job_json(job)
 
-        move_to_next_step(job.conf, name, 'mismatch', job.job_json_file)
+        # set the tasks list to empty as the job will now end
+        move_to_next_step(job, 'mismatch')
+        job.tasks = []
 
         return False
 
@@ -146,7 +148,8 @@ def run(job):
             'stop': int(calendar.timegm(time.gmtime()))
         })
 
-    save_job_json(job.conf, name, job.job_json_file, job.job_json)
+    save_job_json(job)
 
     # if everything was fine, finally move the job json file to the next_step folder
-    move_to_next_step(job.conf, name, 'match', job.job_json_file)
+    move_to_next_step(job, 'match')
+    job.tasks = []
