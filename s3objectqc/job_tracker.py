@@ -4,7 +4,7 @@ import sys
 import json
 from random import randint
 import time
-
+import calendar
 
 def start_a_job(job):
     job_queue_dir = job.conf.get('job_queue_dir')
@@ -117,6 +117,12 @@ def move_to_next_step(job, next_step_name):
     conf = job.conf
     current_step_name = job.tasks[0].get_name()
     job_json_file_name = job.job_json_file
+
+    job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(current_step_name).update({
+            'stop': int(calendar.timegm(time.gmtime()))
+        })
+
+    save_job_json(job)
 
     job_queue_dir = conf.get('job_queue_dir')
 

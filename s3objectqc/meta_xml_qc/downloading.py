@@ -120,36 +120,22 @@ def download_xml_get_s3_file_info(job_dir, object_id, file_name):
         return file_info
 
 
+def _start_task(job):
+    job.job_json.get('_runs_').get(job.conf.get('worker_id'))[get_name()] = {
+        'start': int(calendar.timegm(time.gmtime()))
+    }
+
+
 def run(job):
     global name, next_step
     print ('running task: {}'.format(get_name()))
 
-    # many steps here
-    job.job_json.get('_runs_').get(job.conf.get('worker_id'))[name] = {
-        'start': int(calendar.timegm(time.gmtime()))
-    }
+    _start_task(job)
 
-    ret = compare_file(job)
-
-    if not ret: # file does not match
-        job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(name).update({
-                'stop': int(calendar.timegm(time.gmtime()))
-            })
-
-        save_job_json(job)
-
-        # set the tasks list to empty as the job will now end
+    if not compare_file(job): # file does not match
         move_to_next_step(job, 'mismatch')
-        job.tasks = []
-
         return False
-
-    job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(name).update({
-            'stop': int(calendar.timegm(time.gmtime()))
-        })
-
-    save_job_json(job)
 
     # if everything was fine, finally move the job json file to the next_step folder
     move_to_next_step(job, 'match')
-    job.tasks = []
+    return True
