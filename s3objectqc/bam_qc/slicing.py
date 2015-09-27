@@ -22,7 +22,7 @@ def compare_file(job):
 
 
 def _start_task(job):
-    job.job_json.get('_runs_').get(job.conf.get('worker_id'))[get_name()] = {
+    job.job_json.get('_runs_').get(job.conf.get('run_id'))[get_name()] = {
         'start': int(calendar.timegm(time.gmtime()))
     }
 

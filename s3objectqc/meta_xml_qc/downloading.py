@@ -33,7 +33,7 @@ def compare_file(job):
 
         return True
     else:
-        job.job_json.get('_runs_').get(job.conf.get('worker_id')).get(name).update({
+        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(name).update({
                 's3_bam_size': s3_file_info.get('s3_bam_size'),
                 's3_bam_md5': s3_file_info.get('s3_bam_md5'),
                 's3_bai_size': s3_file_info.get('s3_bai_size'),
@@ -121,7 +121,7 @@ def download_xml_get_s3_file_info(job_dir, object_id, file_name):
 
 
 def _start_task(job):
-    job.job_json.get('_runs_').get(job.conf.get('worker_id'))[get_name()] = {
+    job.job_json.get('_runs_').get(job.conf.get('run_id'))[get_name()] = {
         'start': int(calendar.timegm(time.gmtime()))
     }
 

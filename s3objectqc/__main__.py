@@ -20,9 +20,10 @@ def main(args=None):
         args = sys.argv[1:]
 
     config_file = args[0] if args else 'config.yaml'  # default config file
+    run_dir = args[1] if len(args) > 1 else ''  # support specifying run_dir / run_id
 
-    my_config = get_config(config_file)
-    
+    my_config = get_config(config_file, run_dir)
+
     job_class = load_job_class(my_config.get('job_type'))
 
     while True:

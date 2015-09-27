@@ -12,6 +12,7 @@ name = 'downloading'
 next_step = 'slicing'
 s3_bucket_url = 's3://oicr.icgc/data/'
 
+
 def get_name():
     global name
     return name
@@ -51,7 +52,7 @@ def compare_file(job):
 
 
 def _start_task(job):
-    job.job_json.get('_runs_').get(job.conf.get('worker_id'))[get_name()] = {
+    job.job_json.get('_runs_').get(job.conf.get('run_id'))[get_name()] = {
         'start': int(calendar.timegm(time.gmtime()))
     }
 

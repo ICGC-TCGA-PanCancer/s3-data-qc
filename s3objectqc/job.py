@@ -18,10 +18,11 @@ class Job():
 
             # let's use json file name as job id for now
             self.job_id = re.sub(r'\.json$', '', self.job_json_file)
-            # set up working directory for the job
-            worker_output_dir = self.conf.get('worker_output_dir')
-            self.job_dir = os.path.join(worker_output_dir, self.job_id)
-            os.mkdir(self.job_dir)
+            # set up run directory for the job
+            run_output_dir = self.conf.get('run_output_dir')
+            self.job_dir = os.path.join(run_output_dir, self.job_id)
+
+            if not os.path.isdir(self.job_dir): os.mkdir(self.job_dir)
 
             self.runable = True
 
@@ -29,11 +30,11 @@ class Job():
     def _record_run_info(self):
         if not self.job_json.get('_runs_'):
             self.job_json['_runs_'] = {
-                self.conf.get('worker_id'): {}
+                self.conf.get('run_id'): {}
             }
         else:
             self.job_json.get('_runs_').update({
-                self.conf.get('worker_id'): {}
+                self.conf.get('run_id'): {}
             })
 
 
