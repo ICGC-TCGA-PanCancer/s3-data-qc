@@ -51,10 +51,10 @@ def compare_slicing(job):
         remote_slice_md5sum = remote_slicing(remote_bam_id, r)
         end_time = int(calendar.timegm(time.gmtime()))
 
-        slice_stats.get(r).update = {
+        slice_stats.get(r).update({
             'dcctool_md5sum': remote_slice_md5sum,
             'dcctool_time': end_time - start_time
-        }
+        })
 
     # comparing slices
     mismatch = slices_diff(slice_stats)
@@ -77,21 +77,29 @@ def slices_diff(slice_stats):
 
 def local_slicing(bam_file, region):
     # to be implemented
+    # save slice to local file
+    # then get effective md5sum
     return ''
 
 
 def remote_slicing(bam_file, region):
     # to be implemented
+    # save slice to local file
+    # then get effective md5sum
     return ''
 
 
 def get_local_header(local_bam_file):
     # to be implemented
+    # save header to local file
+    # then get effective md5sum
     return ''
 
 
 def get_remote_header(local_bam_file):
     # to be implemented
+    # save header to local file
+    # then get effective md5sum
     return ''
 
 
