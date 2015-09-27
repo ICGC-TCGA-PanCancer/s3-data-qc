@@ -17,7 +17,14 @@ def get_name():
     return name
 
 
-def compare_file(job):
+def compare_slicing(job):
+    # local slicing
+
+    # remote slicing
+
+    # comparing slices
+
+
     return True
 
 
@@ -33,7 +40,7 @@ def run(job):
 
     _start_task(job)
 
-    if not compare_file(job): # file does not match
+    if not compare_slicing(job): # file does not match
         move_to_next_step(job, 'mismatch')
         return False
 
