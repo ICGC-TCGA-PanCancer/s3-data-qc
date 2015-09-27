@@ -18,14 +18,86 @@ def get_name():
 
 
 def compare_slicing(job):
+    local_bam_file = os.path.join(job.job_dir,
+                                job.job_json.get('bam_file').get('file_name')
+                            )
+    remote_bam_id = job.job_json.get('bam_file').get('object_id')
+
+    samtools_header = get_local_header(local_bam_file)
+    dcctool_header = get_remote_header(remote_bam_id)
+
+    mismatch = False
+    if header_diff(samtools_header, dcctool_header):
+        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'BAM header differs': True
+        })
+        mismatch = True
+
     # local slicing
+    slice_stats = {}
+    for r in job.job_json.get('slice_regions'):
+        start_time = int(calendar.timegm(time.gmtime()))
+        local_slice_md5sum = local_slicing(local_bam_file, r)
+        end_time = int(calendar.timegm(time.gmtime()))
+
+        slice_stats[r] = {
+            'samtools_md5sum': local_slice_md5sum,
+            'samtools_time': end_time - start_time
+        }
 
     # remote slicing
+    for r in job.job_json.get('slice_regions'):
+        start_time = int(calendar.timegm(time.gmtime()))
+        remote_slice_md5sum = remote_slicing(remote_bam_id, r)
+        end_time = int(calendar.timegm(time.gmtime()))
+
+        slice_stats.get(r).update = {
+            'dcctool_md5sum': remote_slice_md5sum,
+            'dcctool_time': end_time - start_time
+        }
 
     # comparing slices
+    mismatch = slices_diff(slice_stats)
+
+    job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'slice_stats': slice_stats
+        })
+
+    if mismatch:
+        return False
+    else:
+        return True
 
 
-    return True
+def slices_diff(slice_stats):
+    # to be implemented
+    # determine whether different or not
+    return False
+
+
+def local_slicing(bam_file, region):
+    # to be implemented
+    return ''
+
+
+def remote_slicing(bam_file, region):
+    # to be implemented
+    return ''
+
+
+def get_local_header(local_bam_file):
+    # to be implemented
+    return ''
+
+
+def get_remote_header(local_bam_file):
+    # to be implemented
+    return ''
+
+
+def header_diff(samtools_header, dcctool_header):
+    # to be implemented
+    return False
 
 
 def _start_task(job):
