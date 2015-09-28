@@ -5,6 +5,7 @@ import xmltodict
 import time
 import subprocess
 import calendar
+import hashlib
 from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 
 
@@ -37,7 +38,7 @@ def compare_slicing(job):
     slice_stats = {}
     for r in job.job_json.get('slice_regions'):
         start_time = int(calendar.timegm(time.gmtime()))
-        local_slice_md5sum = local_slicing(local_bam_file, r)
+        local_slice_md5sum = local_slicing(local_bam_file, r, job.job_dir)
         end_time = int(calendar.timegm(time.gmtime()))
 
         slice_stats[r] = {
@@ -48,7 +49,7 @@ def compare_slicing(job):
     # remote slicing
     for r in job.job_json.get('slice_regions'):
         start_time = int(calendar.timegm(time.gmtime()))
-        remote_slice_md5sum = remote_slicing(remote_bam_id, r)
+        remote_slice_md5sum = remote_slicing(remote_bam_id, r, job.job_dir)
         end_time = int(calendar.timegm(time.gmtime()))
 
         slice_stats.get(r).update({
@@ -75,18 +76,67 @@ def slices_diff(slice_stats):
     return False
 
 
-def local_slicing(bam_file, region):
+def local_slicing(bam_file, region, job_dir):
+    # to be implemented
+    # save slice to local file
+    # then get effective md5sum
+
+    out_file = region + '.samtools.sam'
+    out_file = out_file.replace(':','-')
+    command =   'cd {} && '.format(job_dir) + \
+                'samtools view ' + bam_file + \
+                ' ' + region + ' > ' + \
+                out_file
+
+    process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    out, err = process.communicate()
+
+    if process.returncode:
+        # should not exit for just this error, improve it later
+        sys.exit('Unable to perform local samtools slice.\nError message: {}'.format(err))
+
+    original_slice_file = os.path.join(job_dir, out_file)
+    normalized_slice_file = normalize_sam(original_slice_file)
+
+    return get_md5(normalized_slice_file)
+
+
+def remote_slicing(bam_file, region, outdir):
     # to be implemented
     # save slice to local file
     # then get effective md5sum
     return ''
 
 
-def remote_slicing(bam_file, region):
-    # to be implemented
-    # save slice to local file
-    # then get effective md5sum
-    return ''
+def normalize_sam(original_slice_file):
+    normalized_slice_file = original_slice_file + '.normalized'
+    norm = open(normalized_slice_file, 'w')
+
+    with open(original_slice_file, 'r') as f:
+        for line in f:
+            line = line.rstrip('\n')
+            fields = line.split('\t')
+            fixed_fields = fields[:10]
+            attribs = sorted(fields[10:])
+            norm.write("\t".join(fixed_fields + attribs) + '\n')
+
+    norm.close()
+
+    return normalized_slice_file
+
+
+def get_md5(fname):
+    hash = hashlib.md5()
+    with open(fname) as f:
+        for chunk in iter(lambda: f.read(4096), ""):
+            hash.update(chunk)
+    return hash.hexdigest()
 
 
 def get_local_header(local_bam_file):
