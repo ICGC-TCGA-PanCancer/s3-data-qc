@@ -107,11 +107,36 @@ def local_slicing(bam_file, region, job_dir):
     return get_md5(normalized_slice_file)
 
 
-def remote_slicing(bam_file, region, outdir):
+def remote_slicing(bam_id, region, job_dir):
     # to be implemented
     # save slice to local file
     # then get effective md5sum
-    return ''
+
+    out_file = region + '.dcctool.sam'
+    out_file = out_file.replace(':','-')
+    command =   'cd {} && '.format(job_dir) + \
+                'col-repo view --output-type SAM --object-id ' + bam_id + ' ' + \
+                '--query ' + region + ' > ' + \
+                out_file
+
+    process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    out, err = process.communicate()
+
+    if process.returncode:
+        # should not exit for just this error, improve it later
+        #print('Unable to perform remote slice.\nError message: {}'.format(err))
+        return 'unable_to_slice'
+
+    original_slice_file = os.path.join(job_dir, out_file)
+    normalized_slice_file = normalize_sam(original_slice_file)
+
+    return get_md5(normalized_slice_file)
 
 
 def normalize_sam(original_slice_file):
