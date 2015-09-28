@@ -5,8 +5,8 @@ import xmltodict
 import time
 import subprocess
 import calendar
-import hashlib
 from ..job_tracker import move_to_next_step, get_job_json
+from ..util import get_md5
 
 
 name = 'downloading'
@@ -28,6 +28,8 @@ def download_file_and_get_info(job_dir, object_id, file_name):
     }
 
     fpath = os.path.join(job_dir, file_name)
+
+    start_time = int(calendar.timegm(time.gmtime()))
 
     # Only download when file does not already exist.
     # - This is meant more for repeative testing/debugging without
@@ -52,19 +54,39 @@ def download_file_and_get_info(job_dir, object_id, file_name):
             # should not exit for just this error, improve it later
             sys.exit('Unable to download file from s3.\nError message: {}'.format(err))
 
-    # TODO: get file size and md5sum
+    end_time = int(calendar.timegm(time.gmtime()))
+
+    file_info['download_time'] = end_time - start_time
+
     file_info['file_size'] = os.path.getsize(fpath)
+
+    # run a quick check here to see how EOF is missing
+    if file_name.endswith('.bam'):
+        file_info['eof_missing'] = is_eof_missing(fpath)
+        return file_info  # if eof missing, no need to continue
+
+    start_time = int(calendar.timegm(time.gmtime()))
     file_info['file_md5sum'] = get_md5(fpath)
+    end_time = int(calendar.timegm(time.gmtime()))
+    file_info['md5sum_time'] = end_time - start_time
 
     return file_info
 
 
-def get_md5(fname):
-    hash = hashlib.md5()
-    with open(fname) as f:
-        for chunk in iter(lambda: f.read(4096), ""):
-            hash.update(chunk)
-    return hash.hexdigest()
+def is_eof_missing(bam_file):
+    process = subprocess.Popen(
+            'samtools view ' + bam_file + ' 1:1-1',
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    out, err = process.communicate()
+
+    if 'EOF marker is absent' in err:
+        return True
+    else:
+        return False
 
 
 def compare_file(job):
@@ -79,6 +101,12 @@ def compare_file(job):
         file_info = download_file_and_get_info(job_dir, object_id, file_name)
 
         mismatch = False
+        if file_info.get('eof_missing'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                f + '-EOF-missing': True
+            })
+            mismatch = True
+
         if not file_info.get('file_size') == job.job_json.get(f).get('file_size'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
                 f + '-size-mismatch': file_info.get('file_size')
@@ -90,6 +118,16 @@ def compare_file(job):
                 f + '-md5sum-mismatch': file_info.get('file_md5sum')
             })
             mismatch = True
+
+        if file_info.get('download_time'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                f + '-download_time': file_info.get('download_time')
+            })
+
+        if file_info.get('md5sum_time'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                f + '-md5sum_time': file_info.get('md5sum_time')
+            })
 
         if mismatch: return False
 
