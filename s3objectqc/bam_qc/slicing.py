@@ -147,6 +147,7 @@ def normalize_sam(original_slice_file):
 
     with open(original_slice_file, 'r') as f:
         for line in f:
+            if line.startswith('@'): continue  # strip BAM header lines
             line = line.rstrip('\n')
             fields = line.split('\t')
             fixed_fields = fields[:10]
