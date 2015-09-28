@@ -68,7 +68,6 @@ def is_diff(job):
 
 
 def is_slices_diff(slice_stats):
-    # to be implemented
     # determine whether different or not
     for region in slice_stats:
         if not slice_stats.get(region).get('samtools_md5sum') == \
@@ -79,7 +78,6 @@ def is_slices_diff(slice_stats):
 
 
 def local_slicing(bam_file, region, job_dir):
-    # to be implemented
     # save slice to local file
     # then get effective md5sum
 
@@ -110,7 +108,6 @@ def local_slicing(bam_file, region, job_dir):
 
 
 def remote_slicing(bam_id, region, job_dir):
-    # to be implemented
     # save slice to local file
     # then get effective md5sum
 
@@ -162,7 +159,7 @@ def normalize_sam(original_slice_file):
 def get_md5(fname):
     hash = hashlib.md5()
     with open(fname) as f:
-        for chunk in iter(lambda: f.read(4096), ""):
+        for chunk in iter(lambda: f.read(1024*256), ""):
             hash.update(chunk)
     return hash.hexdigest()
 
