@@ -5,8 +5,8 @@ import xmltodict
 import time
 import subprocess
 import calendar
-import hashlib
 from ..job_tracker import move_to_next_step, get_job_json
+from ..util import get_md5
 
 
 name = 'downloading'
@@ -57,14 +57,6 @@ def download_file_and_get_info(job_dir, object_id, file_name):
     file_info['file_md5sum'] = get_md5(fpath)
 
     return file_info
-
-
-def get_md5(fname):
-    hash = hashlib.md5()
-    with open(fname) as f:
-        for chunk in iter(lambda: f.read(4096), ""):
-            hash.update(chunk)
-    return hash.hexdigest()
 
 
 def compare_file(job):

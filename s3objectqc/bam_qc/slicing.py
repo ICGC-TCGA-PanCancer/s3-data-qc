@@ -5,8 +5,8 @@ import xmltodict
 import time
 import subprocess
 import calendar
-import hashlib
 from ..job_tracker import move_to_next_step, get_job_json, save_job_json
+from ..util import get_md5
 
 
 name = 'slicing'
@@ -154,14 +154,6 @@ def normalize_sam(original_slice_file):
     norm.close()
 
     return normalized_slice_file
-
-
-def get_md5(fname):
-    hash = hashlib.md5()
-    with open(fname) as f:
-        for chunk in iter(lambda: f.read(1024*256), ""):
-            hash.update(chunk)
-    return hash.hexdigest()
 
 
 def get_local_header(local_bam_file):
