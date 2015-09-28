@@ -61,7 +61,7 @@ def download_file_and_get_info(job_dir, object_id, file_name):
     file_info['file_size'] = os.path.getsize(fpath)
 
     # run a quick check here to see how EOF is missing
-    if fil_name.endswith('.bam'):
+    if file_name.endswith('.bam'):
         file_info['eof_missing'] = is_eof_missing(fpath)
         return file_info  # if eof missing, no need to continue
 
