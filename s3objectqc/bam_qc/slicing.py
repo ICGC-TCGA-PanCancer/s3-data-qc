@@ -18,7 +18,7 @@ def get_name():
     return name
 
 
-def compare_slicing(job):
+def is_diff(job):
     local_bam_file = os.path.join(job.job_dir,
                                 job.job_json.get('bam_file').get('file_name')
                             )
@@ -27,12 +27,12 @@ def compare_slicing(job):
     samtools_header = get_local_header(local_bam_file)
     dcctool_header = get_remote_header(remote_bam_id)
 
-    mismatch = False
+    is_diff = False
     if header_diff(samtools_header, dcctool_header):
         job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
             'BAM header differs': True
         })
-        mismatch = True
+        is_diff = True
 
     # local slicing
     slice_stats = {}
@@ -58,21 +58,24 @@ def compare_slicing(job):
         })
 
     # comparing slices
-    mismatch = slices_diff(slice_stats)
+    is_diff = is_slices_diff(slice_stats)
 
     job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
             'slice_stats': slice_stats
         })
 
-    if mismatch:
-        return False
-    else:
-        return True
+
+    return is_diff
 
 
-def slices_diff(slice_stats):
+def is_slices_diff(slice_stats):
     # to be implemented
     # determine whether different or not
+    for region in slice_stats:
+        if not slice_stats.get(region).get('samtools_md5sum') == \
+            slice_stats.get(region).get('dcctool_md5sum'):
+            return True
+
     return False
 
 
@@ -195,10 +198,7 @@ def run(job):
 
     _start_task(job)
 
-    if not compare_slicing(job): # file does not match
+    if is_diff(job): # file does not match
         move_to_next_step(job, 'mismatch')
-        return False
-
-    # if everything was fine, finally move the job json file to the next_step folder
-    move_to_next_step(job, 'match')
-    return True
+    else:
+        move_to_next_step(job, 'match')
