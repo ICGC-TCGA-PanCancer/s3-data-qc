@@ -86,7 +86,7 @@ def is_eof_missing(bam_file):
     if 'EOF marker is absent' in err:
         return True
     else:
-        retrun False
+        return False
 
 
 def compare_file(job):
