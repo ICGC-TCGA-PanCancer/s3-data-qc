@@ -126,8 +126,12 @@ def move_to_next_step(job, next_step_name):
     current_step_name = job.tasks[0].get_name()
     job_json_file_name = job.job_json_file
 
+    start_time = job.job_json.get('_runs_').get(job.conf.get('run_id')).get(current_step_name).get('start')
+    end_time = int(calendar.timegm(time.gmtime()))
+    time_spent = end_time - start_time
     job.job_json.get('_runs_').get(job.conf.get('run_id')).get(current_step_name).update({
-            'stop': int(calendar.timegm(time.gmtime()))
+            'stop': end_time,
+            'time': time_spent
         })
 
     save_job_json(job)
