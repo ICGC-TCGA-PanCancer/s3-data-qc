@@ -98,19 +98,22 @@ def save_job_json(job):
     with open(json_file, 'w') as f:
         f.write(json.dumps(job_json, indent=4, sort_keys=True))
 
-    command = 'cd {} && '.format(conf.get('job_queue_dir')) + \
-              'git add {} && '.format(json_file) + \
-              'git commit -m \'save info at {}: {}\' && '.format(current_step_name,
-                                                            job_json_file_name) + \
-              'git push'
+    for i in range(5): # try at most 5 times
+        command = 'cd {}'.format(conf.get('job_queue_dir'))
 
-    process = subprocess.Popen(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-    out, err = process.communicate()
+        if i == 0:
+            command = command + ' && ' + 'git add {} && '.format(json_file) + \
+                        'git commit -m \'save info at {}: {}\''.format(current_step_name,
+                                                                job_json_file_name)
+        command = command + ' && ' + 'git pull --no-edit && git push'
+
+        process = subprocess.Popen(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        out, err = process.communicate()
 
 
 def move_to_next_step(job, next_step_name):
@@ -128,7 +131,6 @@ def move_to_next_step(job, next_step_name):
 
     print ('move from {} to {}'.format(current_step_name, next_step_name))
 
-    # to be implemented
     for i in range(5): # try at most 5 times
 
         command = 'cd {} && '.format(job_queue_dir) + \
