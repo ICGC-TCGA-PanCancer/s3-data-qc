@@ -114,6 +114,11 @@ def save_job_json(job):
                 stderr=subprocess.PIPE
             )
         out, err = process.communicate()
+        if process.returncode == 0:
+            break  # succeeded
+        else:
+            print('Unable to save the job json file.\nError message: {}\n\nRetrying...'.format(err))
+            time.sleep(randint(1,10))  # pause a few seconds before retry
 
 
 def move_to_next_step(job, next_step_name):
