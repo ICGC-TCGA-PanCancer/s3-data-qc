@@ -49,7 +49,8 @@ def start_a_job(job):
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
                   'git mv {} {} && '.format(os.path.join(job_queue_dir, 'queued-jobs', job_file),
                                             os.path.join(job_queue_dir, next_step_name + '-jobs', job_file)) + \
-                  'git commit -m \'{} to {}: {}\' && '.format('queued', next_step_name, job_file) + \
+                  'git commit -m \'{} to {}: {} in {}\' && '.format('queued',
+                            next_step_name, job_file, job.conf.get('run_id')) + \
                   'git push'
 
         process = subprocess.Popen(
@@ -103,8 +104,8 @@ def save_job_json(job):
 
         if i == 0:
             command = command + ' && ' + 'git add {} && '.format(json_file) + \
-                        'git commit -m \'save info at {}: {}\''.format(current_step_name,
-                                                                job_json_file_name)
+                        'git commit -m \'save info at {}: {} in {}\''.format(current_step_name,
+                                                                job_json_file_name, job.conf.get('run_id'))
         command = command + ' && ' + 'git pull --no-edit && git push'
 
         process = subprocess.Popen(
@@ -148,7 +149,8 @@ def move_to_next_step(job, next_step_name):
                   'git pull && ' + \
                   'git mv {} {} && '.format(os.path.join(job_queue_dir, current_step_name + '-jobs', job_json_file_name),
                                             os.path.join(job_queue_dir, next_step_name + '-jobs', job_json_file_name)) + \
-                  'git commit -m \'{} to {}: {}\' && '.format(current_step_name, next_step_name, job_json_file_name) + \
+                  'git commit -m \'{} to {}: {} in {}\' && '.format(current_step_name,
+                        next_step_name, job_json_file_name, job.conf.get('run_id')) + \
                   'git push'
 
         process = subprocess.Popen(

@@ -61,9 +61,9 @@ def download_file_and_get_info(job_dir, object_id, file_name):
     file_info['file_size'] = os.path.getsize(fpath)
 
     # run a quick check here to see how EOF is missing
-    if file_name.endswith('.bam'):
-        file_info['eof_missing'] = is_eof_missing(fpath)
-        return file_info  # if eof missing, no need to continue
+    if file_name.endswith('.bam') and is_eof_missing(fpath):
+        file_info['eof_missing'] = True
+        return file_info
 
     start_time = int(calendar.timegm(time.gmtime()))
     file_info['file_md5sum'] = get_md5(fpath)
@@ -113,18 +113,20 @@ def compare_file(job):
             })
             mismatch = True
 
-        if not file_info.get('file_md5sum') == job.job_json.get(f).get('file_md5sum'):
+        # only need this comparison when file_md5sum was computed
+        if file_info.get('file_md5sum') is not None and \
+           not file_info.get('file_md5sum') == job.job_json.get(f).get('file_md5sum'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
                 f + '-md5sum-mismatch': file_info.get('file_md5sum')
             })
             mismatch = True
 
-        if file_info.get('download_time'):
+        if file_info.get('download_time') is not None:
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
                 f + '-download_time': file_info.get('download_time')
             })
 
-        if file_info.get('md5sum_time'):
+        if file_info.get('md5sum_time') is not None:
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
                 f + '-md5sum_time': file_info.get('md5sum_time')
             })
