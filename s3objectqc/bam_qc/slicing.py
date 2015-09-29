@@ -131,7 +131,7 @@ def remote_slicing(bam_id, region, job_dir):
         # should not exit for just this error, improve it later
         # print('Unable to perform remote slice.\nError message: {}'.format(err))
         # record slice error in err file
-        with open(out_file + '.err', 'w') as f:
+        with open(os.path.join(job_dir, out_file) + '.err', 'w') as f:
             f.write(err)
         return 'unable_to_slice'
 
