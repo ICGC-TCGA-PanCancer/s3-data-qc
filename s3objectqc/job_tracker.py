@@ -28,7 +28,7 @@ def start_a_job(job):
 
         # step 2: find next job json file
         command = 'cd {} && '.format(os.path.join(job_queue_dir, 'queued-jobs')) + \
-                  'find . -name "*.json" |head -1|awk -F"/" \'{print $2}\' '
+                  'find . -name "*.json" | sort |head -1 | awk -F"/" \'{print $2}\' '
 
         process = subprocess.Popen(
                 command,
