@@ -1,7 +1,7 @@
 import hashlib
 import subprocess
 
-def get_md5(fname, use_shell):
+def get_md5(fname, use_shell=None):
     if use_shell:
         process = subprocess.Popen(
                 'md5sum {}'.format(fname),
