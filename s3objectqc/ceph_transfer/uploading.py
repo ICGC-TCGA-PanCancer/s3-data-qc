@@ -41,22 +41,23 @@ def upload_file(job_dir, file_name, object_id):
     if not os.path.isfile(fpath):
         return
     else:
-        command =   'cd {} && '.format(job_dir) + \
-                    'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + \
-                    file_name + ' ' + \
-                    ceph_bucket_url + object_id 
+        pass
+        # command =   'cd {} && '.format(job_dir) + \
+        #             'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + \
+        #             file_name + ' ' + \
+        #             ceph_bucket_url + object_id 
 
-        process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+        # process = subprocess.Popen(
+        #         command,
+        #         shell=True,
+        #         stdout=subprocess.PIPE,
+        #         stderr=subprocess.PIPE
+        #     )
 
-        out, err = process.communicate()
+        # out, err = process.communicate()
 
-        if process.returncode:
-            return
+        # if process.returncode:
+        #     return
             # should not exit for just this error, improve it later
             # sys.exit('Unable to upload file to ceph.\nError message: {}'.format(err))
     end_time = int(calendar.timegm(time.gmtime()))
