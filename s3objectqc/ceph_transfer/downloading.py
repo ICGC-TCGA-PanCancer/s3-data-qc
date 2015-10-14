@@ -43,13 +43,16 @@ def download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name):
         # should not exit for just this error, improve it later
         sys.exit('Unable to download metadata file from {}.\nError message: {}'.format(url, err))
 
-    with open(fpath, 'r+') as f:
-        xml_str = f.read()
-        data = re.sub(r'<ResultSet .+?>', '<ResultSet>', xml_str)
+    with open(fpath, 'r') as f: xml_str = f.read()
+
+    data = re.sub(r'<ResultSet .+?>', '<ResultSet>', xml_str)
+
+    with open(fpath + '.temp', 'w') as f:
         f.write(data)    
 
     # TODO: get file size and md5sum
-    file_info['file_size'] = os.path.getsize(fpath)
+    file_info['file_size'] = os.path.getsize(fpath + '.temp')
+    os.remove(fpath + '.temp')
     file_info['file_md5sum'] = hashlib.md5(data).hexdigest()
 
     return file_info     
