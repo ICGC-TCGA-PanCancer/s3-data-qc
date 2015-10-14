@@ -6,6 +6,7 @@ import time
 import subprocess
 import calendar
 import hashlib
+import shutil
 from ..job_tracker import move_to_next_step, get_job_json, save_job_json
 
 
@@ -23,7 +24,6 @@ def upload_job(job):
     for f in job.job_json.get('files'):
         object_id = f.get('object_id')
         file_name = f.get('file_name')
-        if not file_name.endswith('.xml'): continue
         ftype = file_name.split('.')[-1]
         file_dir = job_dir if file_name.endswith('.xml') else os.path.join(job_dir, gnos_id)
         file_info = upload_file(file_dir, file_name, object_id)
@@ -83,9 +83,8 @@ def run(job):
     if not upload_job(job): # file does not be successfully uploaded 
         move_to_next_step(job, 'failed')
     else:
-        for f in job.job_json.get('files'):
-            if not f.get('file_name').endswith('.bam'): continue   
-            local_bam_file = os.path.join(job.job_dir, job.job_json.get('gnos_id'), f.get('file_name'))
-            # remove the HUGH bam file when match
-            if os.path.exists(local_bam_file): os.remove(local_bam_file)
         move_to_next_step(job, 'completed')
+        local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
+        # remove the HUGH bam file when match
+        if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir)
+        
