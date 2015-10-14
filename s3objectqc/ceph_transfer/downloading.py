@@ -27,21 +27,26 @@ def download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name):
         'file_size': None,
         'file_md5sum': None
     }    
-    fpath = os.path.join(job_dir, file_name)
-    if not os.path.isfile(fpath):
-        url = gnos_repo + 'cghub/metadata/analysisFull/' + gnos_id
-        response = None
-        try:
-            response = requests.get(url, stream=False, timeout=30)
-        except: # download failed, no need to do anything
-            pass
 
-        if not response or not response.ok:
-            sys.exit('Unable to download metadata file from {}'.format(url))
-        else:
-            metadata_xml_str = response.text
-            data = re.sub(r'<ResultSet .+?>', '<ResultSet>', metadata_xml_str)
-            with open(fpath, 'w') as f: f.write(data)
+    fpath = os.path.join(job_dir, file_name)
+    url = gnos_repo + 'cghub/metadata/analysisFull/' + gnos_id
+    command =   'cd {} && '.format(job_dir) + \
+                'wget ' + url + ' -O ' + file_name
+    process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+    out, err = process.communicate()
+    if process.returncode:
+        # should not exit for just this error, improve it later
+        sys.exit('Unable to download metadata file from {}.\nError message: {}'.format(url, err))
+
+    with open(fpath, 'r+') as f:
+        xml_str = f.read()
+        data = re.sub(r'<ResultSet .+?>', '<ResultSet>', xml_str)
+        f.write(data)    
 
     # TODO: get file size and md5sum
     file_info['file_size'] = os.path.getsize(fpath)
@@ -89,7 +94,7 @@ def compare_file(job):
     for f in job.job_json.get('files'):
         if not f.get('file_name').endswith('.xml'): continue        
         file_name = f.get('file_name')
-        file_info = download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name)
+        file_info = {'file_size': 29683, 'file_md5sum': 'b4f7983a621908315d29ed1ba1aeb608'} #download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name)
 
         mismatch = False
         if not file_info.get('file_size') == f.get('file_size'):
