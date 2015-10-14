@@ -19,11 +19,14 @@ def get_name():
 
 def upload_job(job):
     job_dir = job.job_dir
+    gnos_id = job.job_json.get('gnos_id')
     for f in job.job_json.get('files'):
         object_id = f.get('object_id')
         file_name = f.get('file_name')
+        if not file_name.endswith('.xml'): continue
         ftype = file_name.split('.')[-1]
-        file_info = upload_file(job_dir, file_name, object_id)
+        file_dir = job_dir if file_name.endswith('.xml') else os.path.join(job_dir, gnos_id)
+        file_info = upload_file(file_dir, file_name, object_id)
         if file_info.get('upload_time') is not None:
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
                 ftype + '-upload_time': file_info.get('upload_time')
@@ -34,32 +37,32 @@ def upload_job(job):
     return True
 
 
-def upload_file(job_dir, file_name, object_id):
+def upload_file(file_dir, file_name, object_id):
+    global ceph_bucket_url
+
     file_info = {}
-    fpath = os.path.join(job_dir, file_name)
+    fpath = os.path.join(file_dir, file_name)
     start_time = int(calendar.timegm(time.gmtime()))
     if not os.path.isfile(fpath):
-        return
+        return file_info
     else:
-        pass
-        # command =   'cd {} && '.format(job_dir) + \
-        #             'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + \
-        #             file_name + ' ' + \
-        #             ceph_bucket_url + object_id 
+        command =   'cd {} && '.format(file_dir) + \
+                    'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + \
+                    file_name + ' ' + \
+                    ceph_bucket_url + object_id 
+                    
+        process = subprocess.Popen(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
 
-        # process = subprocess.Popen(
-        #         command,
-        #         shell=True,
-        #         stdout=subprocess.PIPE,
-        #         stderr=subprocess.PIPE
-        #     )
+        out, err = process.communicate()
+        print err 
+        if process.returncode:
+            return file_info
 
-        # out, err = process.communicate()
-
-        # if process.returncode:
-        #     return
-            # should not exit for just this error, improve it later
-            # sys.exit('Unable to upload file to ceph.\nError message: {}'.format(err))
     end_time = int(calendar.timegm(time.gmtime()))
     file_info['upload_time'] = end_time - start_time
     return file_info
@@ -82,7 +85,7 @@ def run(job):
     else:
         for f in job.job_json.get('files'):
             if not f.get('file_name').endswith('.bam'): continue   
-            local_bam_file = os.path.join(job.job_dir, f.get('file_name'))
+            local_bam_file = os.path.join(job.job_dir, job.job_json.get('gnos_id'), f.get('file_name'))
             # remove the HUGH bam file when match
-            os.remove(local_bam_file)
-            move_to_next_step(job, 'completed')
+            if os.path.exists(local_bam_file): os.remove(local_bam_file)
+        move_to_next_step(job, 'completed')
