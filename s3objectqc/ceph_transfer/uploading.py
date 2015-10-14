@@ -86,5 +86,5 @@ def run(job):
         move_to_next_step(job, 'completed')
         local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
         # remove the HUGH bam file when match
-        if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir)
+        if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)
         

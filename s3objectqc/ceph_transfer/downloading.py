@@ -52,13 +52,11 @@ def download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name):
 
 def download_datafiles(gnos_repo, gnos_id, job_dir, file_name):
     file_info = {}
-    # fpath = os.path.join(job_dir,  file_name)
     start_time = int(calendar.timegm(time.gmtime()))
     # Only download when file does not already exist.
     # - This is meant more for repeative testing/debugging without
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created 
-    # if not os.path.isfile(fpath):
     url = gnos_repo + 'cghub/data/analysis/download/' + gnos_id
     command =   'cd {} && '.format(job_dir) + \
                 'gtdownload-wrapper.pl' + ' ' + gnos_key + ' ' + url + ' ' + gnos_id
@@ -108,10 +106,6 @@ def compare_file(job):
 
         if mismatch: return False
 
-    #for f in job.job_json.get('files'):
-        #if f.get('file_name').endswith('.xml'): continue
-        #file_name = f.get('file_name')
-        #ftype = 'bam' if file_name.endswith('.bam') else 'bai'
     file_info = download_datafiles(gnos_repo, gnos_id, job_dir, file_name)
     if file_info.get('download_time') is not None:
         job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
