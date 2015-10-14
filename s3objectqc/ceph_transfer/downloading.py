@@ -94,18 +94,18 @@ def compare_file(job):
     for f in job.job_json.get('files'):
         if not f.get('file_name').endswith('.xml'): continue        
         file_name = f.get('file_name')
-        file_info = {'file_size': 29683, 'file_md5sum': 'b4f7983a621908315d29ed1ba1aeb608'} #download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name)
+        file_info = download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name)
 
         mismatch = False
         if not file_info.get('file_size') == f.get('file_size'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
-                f.get(file_name) + '-size-mismatch': file_info.get('file_size')
+                file_name + '-size-mismatch': file_info.get('file_size')
             })
             mismatch = True
 
         if not file_info.get('file_md5sum') == f.get('file_md5sum'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
-                f.get(file_name) + '-md5sum-mismatch': file_info.get('file_md5sum')
+                file_name + '-md5sum-mismatch': file_info.get('file_md5sum')
             })
             mismatch = True
 
