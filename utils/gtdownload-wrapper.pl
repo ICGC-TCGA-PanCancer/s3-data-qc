@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 use GNOS::Download;
 
 # usage: perl -I path_to_gnos_download_package this_script <other_arguments>
