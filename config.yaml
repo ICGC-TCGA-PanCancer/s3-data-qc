@@ -6,6 +6,10 @@
 #job_queue_dir: meta_xml_qc
 
 # bam qc
+# job_type: bam_qc
+# job_queue_dir: test-bam_qc
+
+# ceph transfer 
 job_type: ceph_transfer
 job_queue_dir: test-ceph-transfer
 
