@@ -6,7 +6,11 @@
 #job_queue_dir: meta_xml_qc
 
 # bam qc
-job_type: bam_qc
-job_queue_dir: test-bam_qc
+# job_type: bam_qc
+# job_queue_dir: test-bam_qc
 
-job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/s3-data-qc-ops.git"
+# ceph transfer 
+job_type: ceph_transfer
+job_queue_dir: test-ceph-transfer
+
+job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/ceph_transfer_ops.git"
