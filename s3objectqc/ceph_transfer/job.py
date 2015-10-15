@@ -1,5 +1,5 @@
 from ..job import Job
-from . import downloading, uploading
+from . import downloading, uploading_client
 
 
 class CEPH_TRANSFER(Job):
