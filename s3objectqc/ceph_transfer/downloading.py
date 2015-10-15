@@ -66,7 +66,7 @@ def download_datafiles(gnos_repo, gnos_id, job_dir, file_name):
     # - In real world, shouldn't have as each time a new run dir is created 
     url = gnos_repo + 'cghub/data/analysis/download/' + gnos_id
     command =   'cd {} && '.format(job_dir) + \
-                'gtdownload-wrapper.pl' + ' ' + gnos_key + ' ' + url + ' ' + gnos_id
+                'gtdownload -l gtdownload.log -c ' + gnos_key + ' ' + url
 
     process = subprocess.Popen(
             command,
@@ -79,7 +79,8 @@ def download_datafiles(gnos_repo, gnos_id, job_dir, file_name):
 
     if process.returncode:
         # should not exit for just this error, improve it later
-        sys.exit('Unable to download file from gnos.\nError message: {}'.format(err))
+        #sys.exit('Unable to download file from gnos.\nError message: {}'.format(err))
+        file_info['error'] = 'gtdownload failed'
     end_time = int(calendar.timegm(time.gmtime()))
     file_info['download_time'] = end_time - start_time
     return file_info
@@ -114,11 +115,13 @@ def compare_file(job):
         if mismatch: return False
 
     file_info = download_datafiles(gnos_repo, gnos_id, job_dir, file_name)
-    if file_info.get('download_time') is not None:
-        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+    job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
             'gnos-download_time': file_info.get('download_time')
         })
-    else:
+    if file_info.get('error'):
+        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'gtdownload-error': True
+        })        
         return False
 
     return True
