@@ -7,7 +7,6 @@ import time
 import subprocess
 import calendar
 import hashlib
-import requests
 from ..job_tracker import move_to_next_step, get_job_json
 from ..util import get_md5
 

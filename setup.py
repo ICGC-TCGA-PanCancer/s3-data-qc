@@ -7,8 +7,7 @@ setup(
     packages=['s3objectqc'],
     install_requires=[
       'pyyaml',
-      'xmltodict',
-      'requests'
+      'xmltodict'
     ],
     entry_points='''
     [console_scripts]
