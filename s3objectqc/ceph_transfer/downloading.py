@@ -12,7 +12,7 @@ from ..util import get_md5
 
 
 name = 'downloading'
-next_step = 'uploadingbyclient'
+next_step = 'uploading'
 gnos_key = '/home/ubuntu/.ssh/gnos_key'
 
 
