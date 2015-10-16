@@ -70,7 +70,7 @@ def upload_job(job):
 
     if file_info.get('upload_time') is not None:
         job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
-            ftype + '-upload_time': file_info.get('upload_time')
+            'upload_time': file_info.get('upload_time')
         })
         return True
     else:
