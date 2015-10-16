@@ -21,10 +21,8 @@ def get_name():
 
 def generate_manifest(job_dir, gnos_id):
 
-    xml_file = os.path.join(job_dir, gnos_id, '.xml')
-    print xml_file
     data_file_path = os.path.join(job_dir, gnos_id)
-    print data_file_path
+    xml_file = data_file_path + '.xml'
     if not os.path.isfile(xml_file) or not os.path.exists(data_file_path):
         return False   
     # generate manifest file
