@@ -18,38 +18,18 @@ def get_name():
     global name
     return name
 
-def upload_job(job):
-    job_dir = job.job_dir
-    gnos_id = job.job_json.get('gnos_id')
-    for f in job.job_json.get('files'):
-        object_id = f.get('object_id')
-        file_name = f.get('file_name')
-        ftype = file_name.split('.')[-1]
-        file_dir = job_dir if file_name.endswith('.xml') else os.path.join(job_dir, gnos_id)
-        file_info = upload_file(file_dir, file_name, object_id)
-        if file_info.get('upload_time') is not None:
-            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
-                ftype + '-upload_time': file_info.get('upload_time')
-            })
-        else:
-            return False
 
-    return True
+def generate_manifest(job_dir, gnos_id):
 
-
-def upload_file(file_dir, file_name, object_id):
-    global ceph_bucket_url
-
-    file_info = {}
-    fpath = os.path.join(file_dir, file_name)
-    start_time = int(calendar.timegm(time.gmtime()))
-    if not os.path.isfile(fpath):
-        return file_info
+    data_file_path = os.path.join(job_dir, gnos_id)
+    xml_file = data_file_path + '.xml'
+    if not os.path.isfile(xml_file) or not os.path.exists(data_file_path):
+        return False   
+    # generate manifest file
     else:
-        command =   'cd {} && '.format(file_dir) + \
-                    'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + \
-                    file_name + ' ' + \
-                    ceph_bucket_url + object_id 
+        command =   'cd {} && '.format(job_dir) + \
+                    'mv {} {} &&'.format(xml_file, data_file_path) + \
+                    'dcc-metadata-client -i ' + gnos_id + ' -m ' + gnos_id + '.txt -o ./'
                     
         process = subprocess.Popen(
                 command,
@@ -59,13 +39,43 @@ def upload_file(file_dir, file_name, object_id):
             )
 
         out, err = process.communicate()
-        print err 
+        if process.returncode:
+            return False
+    return True  
+
+
+def upload_job(job):
+
+    file_info = {}
+    job_dir = job.job_dir
+    gnos_id = job.job_json.get('gnos_id')
+    start_time = int(calendar.timegm(time.gmtime()))
+    if generate_manifest(job_dir, gnos_id):
+        command =   'cd {} && '.format(job_dir) + \
+                    'dcc-storage-client upload --manifest ' + gnos_id + '.txt'
+                    
+        process = subprocess.Popen(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+
+        out, err = process.communicate()
         if process.returncode:
             return file_info
 
-    end_time = int(calendar.timegm(time.gmtime()))
-    file_info['upload_time'] = end_time - start_time
-    return file_info
+        end_time = int(calendar.timegm(time.gmtime()))
+        file_info['upload_time'] = end_time - start_time
+
+    if file_info.get('upload_time') is not None:
+        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'upload_time': file_info.get('upload_time')
+        })
+        return True
+    else:
+        return False
+    
 
 
 def _start_task(job):
