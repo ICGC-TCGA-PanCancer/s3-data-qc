@@ -30,7 +30,7 @@ def generate_manifest(job_dir, gnos_id, job_json):
             for f in job_json.get('files'):
                 object_id = f.get('object_id')
                 file_name = f.get('file_name')
-                m.writh(object_id + '=' + os.path.join(job_dir, gnos_id, file_name))
+                m.write(object_id + '=' + os.path.join(job_dir, gnos_id, file_name) + '\n')
 
     return True  
 
@@ -41,7 +41,7 @@ def upload_job(job):
     job_dir = job.job_dir
     gnos_id = job.job_json.get('gnos_id')
     start_time = int(calendar.timegm(time.gmtime()))
-    if generate_manifest(job_dir, gnos_id, job_json):
+    if generate_manifest(job_dir, gnos_id, job.job_json):
         command =   'cd {} && '.format(job_dir) + \
                     'dcc-storage-client upload --manifest ' + gnos_id + '.txt'
                     
