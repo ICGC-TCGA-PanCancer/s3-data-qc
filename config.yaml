@@ -14,3 +14,5 @@ job_type: ceph_transfer
 job_queue_dir: ceph-transfer-jobs-prod1
 
 job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/ceph_transfer_ops.git"
+
+keep_running_even_queue_empty: true

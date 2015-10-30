@@ -28,10 +28,11 @@ def main(args=None):
 
     while True:
     	# get next job
+        print('\nFetching new jobs...\n')
         job = job_class(my_config)
         if job.runable:
             job.run()
-        else:
+        elif not my_config.get('keep_running_even_queue_empty'):
             break
 
     # better logging to be added
