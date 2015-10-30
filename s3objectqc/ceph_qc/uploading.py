@@ -57,7 +57,7 @@ def need_to_upload(job):
 
         command =   'cd {} && '.format(job_dir) + \
                     'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 ls ' + bucket_url + \
-                    object_id + ' |grep meta > ls.out'
+                    object_id + ' |grep meta > ' + f + '.ls.out'
 
         process = subprocess.Popen(
                 command,
@@ -69,7 +69,7 @@ def need_to_upload(job):
         out, err = process.communicate()
 
         if process.returncode:
-            file_info['error'] = 'failed to check the meta'
+            file_info['error'] = f+':failed to check the meta'
             return file_info
     
         with open(job_dir+'/ls.out', 'r') as f: out_str = f.read()
