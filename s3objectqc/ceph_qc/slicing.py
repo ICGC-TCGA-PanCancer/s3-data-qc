@@ -19,7 +19,7 @@ def get_name():
 
 
 def is_diff(job):
-    local_bam_file = os.path.join(job.job_dir,
+    local_bam_file = os.path.join(job.job_dir, job.job_json.get('gnos_id'),
                                 job.job_json.get('bam_file').get('file_name')
                             )
     remote_bam_id = job.job_json.get('bam_file').get('object_id')
@@ -159,10 +159,32 @@ def normalize_sam(original_slice_file):
     return normalized_slice_file
 
 
-def get_local_header(local_bam_file):
+def get_local_header(local_bam_file, job_dir):
     # to be implemented
     # save header to local file
     # then get effective md5sum
+    # out_file = 'header.samtools.sam'
+    # command =   'cd {} && '.format(job_dir) + \
+    #             'samtools view -H ' + bam_file + ' > ' + out_file
+
+    # process = subprocess.Popen(
+    #         command,
+    #         shell=True,
+    #         stdout=subprocess.PIPE,
+    #         stderr=subprocess.PIPE
+    #     )
+
+    # out, err = process.communicate()
+
+    # if process.returncode:
+    #     # should not exit for just this error, improve it later
+    #     sys.exit('Unable to perform local samtools header.\nError message: {}'.format(err))
+
+    # original_header_file = os.path.join(job_dir, out_file)
+    # normalized_header_file = normalize_sam(original_header_file)
+
+    # return get_md5(normalized_header_file)
+
     return ''
 
 
