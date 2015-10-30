@@ -62,7 +62,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
 
     start_time = int(calendar.timegm(time.gmtime()))
 
-    if file_name.endswith['.xml']:
+    if file_name.endswith('.xml'):
         with open(fpath, 'r') as f: xml_str = f.read()
         data = re.sub(r'<ResultSet .+?>', '<ResultSet>', xml_str)
         with open(fpath + '.temp', 'w') as f:
