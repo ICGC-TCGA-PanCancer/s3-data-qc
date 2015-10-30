@@ -153,12 +153,21 @@ def run(job):
 
     file_info = need_to_upload(job)
     if file_info.get('error'): 
+        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'error': file_info.get('error')})
         move_to_next_step(job, 'failed')
+        return False
     if file_info.get('need_to_upload') is True:
         # objects do not be successfully deleted
-        if not remove_remote_files(job): move_to_next_step(job, 'failed')
+        if not remove_remote_files(job): 
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'error': 'Unable to remove the remote files'})
+            move_to_next_step(job, 'failed')
+            return False
         # file does not be successfully uploaded 
-        if not upload_job(job): move_to_next_step(job, 'failed')
+        if not upload_job(job): 
+            move_to_next_step(job, 'failed')
+            return False
     move_to_next_step(job, next_step)
     local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
     # remove the HUGH bam file when match
