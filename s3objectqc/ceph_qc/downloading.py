@@ -78,11 +78,11 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
         #     file_info['eof_missing'] = True
         #     return file_info
         # debug
-        if file_name.endswith('.bai'): 
-            file_info['file_md5sum'] = get_md5(fpath, True)
-        else:
-            file_info['file_md5sum'] = '13b9efe5445d2578986ef41df95d236f'
-        #file_info['file_md5sum'] = get_md5(fpath, True)
+        # if file_name.endswith('.bai'): 
+        #     file_info['file_md5sum'] = get_md5(fpath, True)
+        # else:
+        #     file_info['file_md5sum'] = '13b9efe5445d2578986ef41df95d236f'
+        file_info['file_md5sum'] = get_md5(fpath, True)
     
     end_time = int(calendar.timegm(time.gmtime()))
     file_info['md5sum_time'] = end_time - start_time
