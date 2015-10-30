@@ -32,6 +32,7 @@ def start_a_job(job):
         job_source_dir = 'queued'
         job_file = _get_retry_job(job_queue_dir, job.conf.get('run_id'))
 
+        print('start-job: {}'.format(job_file)) 
         if job_file:
             job_source_dir = 'retry'
         else:
@@ -47,7 +48,7 @@ def start_a_job(job):
             job_file, err = process.communicate()
             job_file = job_file.rstrip()
 
-            #print('job: {}'.format(job_file))  # for debugging
+            print('job: {}'.format(job_file))  # for debugging
 
             time.sleep(randint(1,10))  # pause a few seconds before retry
             continue  # try again
