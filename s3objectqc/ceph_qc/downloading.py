@@ -73,9 +73,10 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     else:
         file_info['file_size'] = os.path.getsize(fpath)
         # run a quick check here to see how EOF is missing
-        if file_name.endswith('.bam') and is_eof_missing(fpath):
-            file_info['eof_missing'] = True
-            return file_info
+        # comment out for debug
+        # if file_name.endswith('.bam') and is_eof_missing(fpath):
+        #     file_info['eof_missing'] = True
+        #     return file_info
         # debug
         if file_name.endswith('.bai'): 
             file_info['file_md5sum'] = get_md5(fpath, True)
