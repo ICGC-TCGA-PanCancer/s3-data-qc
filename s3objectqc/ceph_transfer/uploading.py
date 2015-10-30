@@ -19,28 +19,19 @@ def get_name():
     return name
 
 
-def generate_manifest(job_dir, gnos_id):
+def generate_manifest(job_dir, gnos_id, job_json):
 
     data_file_path = os.path.join(job_dir, gnos_id)
     xml_file = data_file_path + '.xml'
     if not os.path.isfile(xml_file) or not os.path.exists(data_file_path):
         return False   
-    # generate manifest file
-    else:
-        command =   'cd {} && '.format(job_dir) + \
-                    'mv {} {} &&'.format(xml_file, data_file_path) + \
-                    'dcc-metadata-client -i ' + gnos_id + ' -m ' + gnos_id + '.txt -o ./'
-                    
-        process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+    else:  # generate manifest file
+        with open(os.path.join(job_dir, gnos_id + '.txt'), 'w') as m:
+            for f in job_json.get('files'):
+                object_id = f.get('object_id')
+                file_name = f.get('file_name')
+                m.writh(object_id + '=' + os.path.join(job_dir, gnos_id, file_name))
 
-        out, err = process.communicate()
-        if process.returncode:
-            return False
     return True  
 
 
@@ -50,7 +41,7 @@ def upload_job(job):
     job_dir = job.job_dir
     gnos_id = job.job_json.get('gnos_id')
     start_time = int(calendar.timegm(time.gmtime()))
-    if generate_manifest(job_dir, gnos_id):
+    if generate_manifest(job_dir, gnos_id, job_json):
         command =   'cd {} && '.format(job_dir) + \
                     'dcc-storage-client upload --manifest ' + gnos_id + '.txt'
                     
