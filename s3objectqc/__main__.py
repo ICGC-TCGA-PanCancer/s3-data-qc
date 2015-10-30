@@ -28,7 +28,7 @@ def main(args=None):
 
     while True:
     	# get next job
-        print('\nFetching new jobs...\n')
+        print('Fetching new jobs...\n')
         job = job_class(my_config)
         if job.runable:
             job.run()

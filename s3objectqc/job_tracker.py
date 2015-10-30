@@ -48,9 +48,9 @@ def start_a_job(job):
             job_file = job_file.rstrip()
 
             #print('job: {}'.format(job_file))  # for debugging
-
-            time.sleep(randint(1,10))  # pause a few seconds before retry
-            continue  # try again
+            if not job_file:
+                time.sleep(randint(1,10))  # pause a few seconds before retry
+                continue  # try again
 
         # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
