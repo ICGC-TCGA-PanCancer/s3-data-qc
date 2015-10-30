@@ -83,7 +83,7 @@ def _get_retry_job(job_queue_dir, run_id):
         with open(job_file) as f:
             job_json = json.load(f)
             if job_json.get('_runs_', {}).get(run_id):
-                return job_file
+                return os.path.basename(job_file)
 
 
 # this function retrieves the job_json_file and parse it and return
