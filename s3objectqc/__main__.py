@@ -31,7 +31,7 @@ def main(args=None):
         job = job_class(my_config)
         if job.runable:
             job.run()
-        else:
+        elif not my_config.get('keep_running_even_queue_empty'):
             break
 
     # better logging to be added
