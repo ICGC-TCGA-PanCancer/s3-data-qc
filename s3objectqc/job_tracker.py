@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+import glob
 import json
 from random import randint
 import time
@@ -27,29 +28,35 @@ def start_a_job(job):
         out, err = process.communicate()
 
         # step 2: find next job json file
-        command = 'cd {} && '.format(os.path.join(job_queue_dir, 'queued-jobs')) + \
-                  'find . -name "*.json" | sort |head -1 | awk -F"/" \'{print $2}\' '
+        # first look into retry-jobs directory
+        job_source_dir = 'queued'
+        job_file = _get_retry_job(job_queue_dir, job.conf.get('run_id'))
 
-        process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-        job_file, err = process.communicate()
-        job_file = job_file.rstrip()
+        if job_file:
+            job_source_dir = 'retry'
+        else:
+            command = 'cd {} && '.format(os.path.join(job_queue_dir, 'queued-jobs')) + \
+                      'find . -name "*.json" | sort |head -1 | awk -F"/" \'{print $2}\' '
 
-        #print('job: {}'.format(job_file))  # for debugging
-        
-        if not job_file:
+            process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+            job_file, err = process.communicate()
+            job_file = job_file.rstrip()
+
+            #print('job: {}'.format(job_file))  # for debugging
+
             time.sleep(randint(1,10))  # pause a few seconds before retry
             continue  # try again
 
         # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
-                  'git mv {} {} && '.format(os.path.join(job_queue_dir, 'queued-jobs', job_file),
+                  'git mv {} {} && '.format(os.path.join(job_queue_dir, job_source_dir + '-jobs', job_file),
                                             os.path.join(job_queue_dir, next_step_name + '-jobs', job_file)) + \
-                  'git commit -m \'{} to {}: {} in {}\' && '.format('queued',
+                  'git commit -m \'{} to {}: {} in {}\' && '.format(job_source_dir,
                             next_step_name, job_file, job.conf.get('run_id')) + \
                   'git push'
 
@@ -68,8 +75,17 @@ def start_a_job(job):
             time.sleep(randint(1,10))  # pause a few seconds before retry
 
     return job_file
-    
-    
+
+
+def _get_retry_job(job_queue_dir, run_id):
+    retry_job_files = os.path.join(job_queue_dir, 'retry-jobs', '*.json')
+    for job_file in glob.glob(retry_job_files):
+        with open(job_file) as f:
+            job_json = json.load(f)
+            if job_json.get('_runs_', {}).get(run_id):
+                return os.path.basename(job_file)
+
+
 # this function retrieves the job_json_file and parse it and return
 def get_job_json(job):
     conf = job.conf
