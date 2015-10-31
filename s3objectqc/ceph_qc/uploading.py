@@ -97,9 +97,9 @@ def generate_manifest(job_dir, gnos_id, job_json):
     else:  # generate manifest file
         # os.rename(xml_file, os.path.join(data_file_path, gnos_id + '.xml'))
         with open(os.path.join(job_dir, gnos_id + '.txt'), 'w') as m:
-            for f in job_json.get('files'):
-                object_id = f.get('object_id')
-                file_name = f.get('file_name')
+            for f in ['bai_file', 'bam_file', 'xml_file']:
+                object_id = job_json.get(f).get('object_id')
+                file_name = job_json.get(f).get('file_name')
                 m.write(object_id + '=' + os.path.join(job_dir, gnos_id, file_name) + '\n')
 
     return True
