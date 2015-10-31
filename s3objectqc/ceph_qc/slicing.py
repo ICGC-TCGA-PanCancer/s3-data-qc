@@ -216,10 +216,13 @@ def run(job):
         move_to_next_step(job, 'mismatch')
         return False
     else:
-        local_bam_file = os.path.join(job.job_dir,
-                                job.job_json.get('bam_file').get('file_name')
-                            )
+        #local_bam_file = os.path.join(job.job_dir,
+                            #     job.job_json.get('bam_file').get('file_name')
+                            # )
         # remove the HUGH bam file when match
-        os.remove(local_bam_file)
+        #os.remove(local_bam_file)
+        local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
+        # remove the HUGH bam file when match
+        if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)
         move_to_next_step(job, 'match')
         return True
