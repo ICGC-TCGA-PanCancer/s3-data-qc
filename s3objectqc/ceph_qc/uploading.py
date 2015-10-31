@@ -91,11 +91,11 @@ def need_to_upload(job):
 def generate_manifest(job_dir, gnos_id, job_json):
 
     data_file_path = os.path.join(job_dir, gnos_id)
-    xml_file = data_file_path + '.xml'
-    if not os.path.isfile(xml_file) or not os.path.exists(data_file_path):
+    # xml_file = data_file_path + '.xml'
+    if not os.path.exists(data_file_path):
         return False   
     else:  # generate manifest file
-        os.rename(xml_file, os.path.join(data_file_path, gnos_id + '.xml'))
+        # os.rename(xml_file, os.path.join(data_file_path, gnos_id + '.xml'))
         with open(os.path.join(job_dir, gnos_id + '.txt'), 'w') as m:
             for f in job_json.get('files'):
                 object_id = f.get('object_id')
