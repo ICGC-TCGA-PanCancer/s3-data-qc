@@ -214,6 +214,7 @@ def run(job):
 
     if is_diff(job): # file does not match
         move_to_next_step(job, 'mismatch')
+        return False
     else:
         local_bam_file = os.path.join(job.job_dir,
                                 job.job_json.get('bam_file').get('file_name')
@@ -221,3 +222,4 @@ def run(job):
         # remove the HUGH bam file when match
         os.remove(local_bam_file)
         move_to_next_step(job, 'match')
+        return True

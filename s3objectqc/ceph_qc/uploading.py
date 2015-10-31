@@ -20,13 +20,12 @@ def get_name():
 
 def remove_remote_files(job):
     file_info = {}
-    job_dir = job.job_dir
+    # job_dir = job.job_dir
     start_time = int(calendar.timegm(time.gmtime()))
     for f in ['bai_file', 'bam_file', 'xml_file']:
         object_id = job.job_json.get(f).get('object_id')
 
-        command =   'cd {} && '.format(job_dir) + \
-                    'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 rm ' + bucket_url + object_id 
+        command = 'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 rm ' + bucket_url + object_id 
         process = subprocess.Popen(
                 command,
                 shell=True,
@@ -57,7 +56,7 @@ def need_to_upload(job):
 
         command =   'cd {} && '.format(job_dir) + \
                     'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 ls ' + bucket_url + \
-                    object_id + ' |grep meta > ' + f + '.ls.out'
+                    object_id + ' > ' + f + '.ls.out'
 
         process = subprocess.Popen(
                 command,
@@ -70,9 +69,10 @@ def need_to_upload(job):
 
         if process.returncode:
             file_info['error'] = f+':failed to check the meta'
+            print err
             return file_info
     
-        with open(job_dir+'/ls.out', 'r') as f: out_str = f.read()
+        with open(job_dir+'/'+ f + '.ls.out', 'r') as f: out_str = f.read()
         if not '.meta' in out_str: 
             file_info['need_to_upload'] = True
             return file_info
@@ -172,4 +172,5 @@ def run(job):
     local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
     # remove the HUGH bam file when match
     if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)
+    return True
         
