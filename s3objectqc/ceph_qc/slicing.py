@@ -159,7 +159,7 @@ def normalize_sam(original_slice_file):
     return normalized_slice_file
 
 
-def get_local_header(local_bam_file, job_dir):
+def get_local_header(local_bam_file):
     # to be implemented
     # save header to local file
     # then get effective md5sum
