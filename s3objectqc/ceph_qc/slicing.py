@@ -114,7 +114,7 @@ def remote_slicing(bam_id, region, job_dir):
     out_file = region + '.dcctool.sam'
     out_file = out_file.replace(':','-')
     command =   'cd {} && '.format(job_dir) + \
-                'col-repo view --output-type sam --object-id ' + bam_id + ' ' + \
+                'dcc-storage-client view --output-type sam --object-id ' + bam_id + ' ' + \
                 '--query ' + region + ' > ' + \
                 out_file
 
