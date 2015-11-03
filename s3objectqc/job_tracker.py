@@ -56,7 +56,7 @@ def start_a_job(job):
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
                   'git checkout master && ' + \
                   'git reset --hard origin/master && ' + \
-                  'git pull'
+                  'git pull &&' + \
                   'git mv {} {} && '.format(os.path.join(job_queue_dir, job_source_dir + '-jobs', job_file),
                                             os.path.join(job_queue_dir, next_step_name + '-jobs', job_file)) + \
                   'git commit -m \'{} to {}: {} in {}\' && '.format(job_source_dir,
