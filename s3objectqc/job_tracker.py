@@ -54,6 +54,9 @@ def start_a_job(job):
 
         # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
+                  'git checkout master && ' + \
+                  'git reset --hard origin/master && ' + \
+                  'git pull'
                   'git mv {} {} && '.format(os.path.join(job_queue_dir, job_source_dir + '-jobs', job_file),
                                             os.path.join(job_queue_dir, next_step_name + '-jobs', job_file)) + \
                   'git commit -m \'{} to {}: {} in {}\' && '.format(job_source_dir,
