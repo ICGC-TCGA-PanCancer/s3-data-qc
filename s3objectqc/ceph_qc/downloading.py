@@ -111,8 +111,28 @@ def compare_file(job):
     # - download bai, check size and md5sum
     # - download bam, check size and md5sum
     gnos_id = job.job_json.get('gnos_id')
-    for f in ['bai_file', 'bam_file', 'xml_file']:
-        job_dir = job.job_dir
+    job_dir = job.job_dir
+
+    # compare xml file
+    f = 'xml_file'
+    object_id = job.job_json.get(f).get('object_id')
+    file_name = job.job_json.get(f).get('file_name')
+    file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
+    mismatch = True
+
+    for repo in job.job_json.get('available_repos'):
+        v = repo.values()[0]
+        if file_info.get('file_md5sum') is not None and file_info.get('file_size') is not None \
+        file_info.get('file_md5sum') == v.get('file_md5sum') and \
+        file_info.get('file_size') == v.get('file_size'):
+            mismatch = False
+            break
+    
+    if mismatch: return False
+
+
+    for f in ['bai_file', 'bam_file']:
+        #job_dir = job.job_dir
         object_id = job.job_json.get(f).get('object_id')
         file_name = job.job_json.get(f).get('file_name')
 
