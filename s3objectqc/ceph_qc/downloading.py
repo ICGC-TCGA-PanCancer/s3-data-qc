@@ -122,9 +122,8 @@ def compare_file(job):
 
     for repo in job.job_json.get('available_repos'):
         v = repo.values()[0]
-        if file_info.get('file_md5sum') is not None and file_info.get('file_size') is not None \
-        file_info.get('file_md5sum') == v.get('file_md5sum') and \
-        file_info.get('file_size') == v.get('file_size'):
+        if file_info.get('file_md5sum') is not None and file_info.get('file_size') is not None and \
+        file_info.get('file_md5sum') == v.get('file_md5sum') and file_info.get('file_size') == v.get('file_size'):
             mismatch = False
             break
     
