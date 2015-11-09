@@ -64,6 +64,8 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     end_time = int(calendar.timegm(time.gmtime()))
 
     file_info['download_time'] = end_time - start_time
+    print file_info['download_time']
+    print os.path.isfile(fpath)
 
     start_time = int(calendar.timegm(time.gmtime()))
 
