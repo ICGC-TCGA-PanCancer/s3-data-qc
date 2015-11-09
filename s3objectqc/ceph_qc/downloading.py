@@ -37,7 +37,8 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # - This is meant more for repeative testing/debugging without
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created
-    print fpath 
+    print fpath
+    print os.path.isfile(fpath)
     if not os.path.isfile(fpath):
         command =   'cd {} && '.format(job_dir+'/'+gnos_id) + \
                     'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + bucket_url + \
@@ -52,6 +53,9 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
             )
 
         out, err = process.communicate()
+
+        print fpath
+        print err
 
         if process.returncode:
             # should not exit for just this error, improve it later
