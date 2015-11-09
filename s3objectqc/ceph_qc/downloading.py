@@ -36,7 +36,8 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # Only download when file does not already exist.
     # - This is meant more for repeative testing/debugging without
     #   having to download large file over and over again.
-    # - In real world, shouldn't have as each time a new run dir is created 
+    # - In real world, shouldn't have as each time a new run dir is created
+    print fpath 
     if not os.path.isfile(fpath):
         command =   'cd {} && '.format(job_dir+'/'+gnos_id) + \
                     'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + bucket_url + \
