@@ -37,8 +37,6 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # - This is meant more for repeative testing/debugging without
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created
-    print fpath
-    print os.path.isfile(fpath)
     if not os.path.isfile(fpath):
         command =   'cd {} && '.format(job_dir+'/'+gnos_id) + \
                     'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + bucket_url + \
@@ -54,9 +52,6 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
 
         out, err = process.communicate()
 
-        print fpath
-        print err
-
         if process.returncode:
             # should not exit for just this error, improve it later
             sys.exit('Unable to download file from s3.\nError message: {}'.format(err))
@@ -64,8 +59,6 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     end_time = int(calendar.timegm(time.gmtime()))
 
     file_info['download_time'] = end_time - start_time
-    print file_info['download_time']
-    print os.path.isfile(fpath)
 
     start_time = int(calendar.timegm(time.gmtime()))
 
@@ -84,11 +77,6 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
         if file_name.endswith('.bam') and is_eof_missing(fpath):
             file_info['eof_missing'] = True
             return file_info
-        # debug
-        # if file_name.endswith('.bai'): 
-        #     file_info['file_md5sum'] = get_md5(fpath, True)
-        # else:
-        #     file_info['file_md5sum'] = '13b9efe5445d2578986ef41df95d236f'
         file_info['file_md5sum'] = get_md5(fpath, True)
     
     end_time = int(calendar.timegm(time.gmtime()))
@@ -111,6 +99,42 @@ def is_eof_missing(bam_file):
         return True
     else:
         return False
+
+def compare_vcf_files(job):
+    gnos_id = job.job_json.get('gnos_id')
+    job_dir = job.job_dir
+    for f in job.job_json.get('files'):
+        object_id = f.get('object_id')
+        file_name = f.get('file_name')
+        file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
+        mismatch = False
+        if not file_info.get('file_size') == f.get('file_size'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-size-mismatch': file_info.get('file_size')
+            })
+            mismatch = True
+
+        # only need this comparison when file_md5sum was computed
+        if file_info.get('file_md5sum') is not None and \
+           not file_info.get('file_md5sum') == f.get('file_md5sum'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-md5sum-mismatch': file_info.get('file_md5sum')
+            })
+            mismatch = True
+
+        if file_info.get('download_time') is not None:
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-download_time': file_info.get('download_time')
+            })
+
+        if file_info.get('md5sum_time') is not None:
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-md5sum_time': file_info.get('md5sum_time')
+            })
+
+        if mismatch: return False
+
+    return True
 
 
 def compare_file(job):
@@ -192,7 +216,14 @@ def run(job):
 
     _start_task(job)
 
-    if not compare_file(job): # file does not match
+    if job.job_json.get('data_type').endswith('-VCF'):
+        compare = compare_vcf_files(job)
+    elif job.job_json.get('data_type').startswith('WGS-BWA'):
+        compare = compare_file(job)
+    else:
+        sys.exit('Unknown data type.\nError message: {}'.format(job.job_json.get('data_type')))
+
+    if not compare: # file does not match
         move_to_next_step(job, 'mismatch')
         return False
 

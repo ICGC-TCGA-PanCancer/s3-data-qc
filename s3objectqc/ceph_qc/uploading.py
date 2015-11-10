@@ -47,7 +47,7 @@ def remove_remote_files(job):
 
 
 def need_to_upload(job):
-
+    
     file_info = {}
     start_time = int(calendar.timegm(time.gmtime()))
     job_dir = job.job_dir
@@ -151,7 +151,14 @@ def run(job):
 
     _start_task(job)
 
-    file_info = need_to_upload(job)
+    if job.job_json.get('data_type').startswith('WGS-BWA'):
+        file_info = need_to_upload(job)
+    elif job.job_json.get('data_type').endswith('-VCF'):
+        move_to_next_step(job, next_step)
+        return True
+    else:
+        sys.exit('Unknown data type.\nError message: {}'.format(job.job_json.get('data_type')))
+
     if file_info.get('error'): 
         job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
             'error': file_info.get('error')})
@@ -169,8 +176,5 @@ def run(job):
             move_to_next_step(job, 'failed')
             return False
     move_to_next_step(job, next_step)
-    #local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
-    # remove the HUGH bam file when match
-    #if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)
     return True
         
