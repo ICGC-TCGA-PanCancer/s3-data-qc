@@ -218,8 +218,18 @@ def run(job):
 
     if job.job_json.get('data_type').endswith('-VCF'):
         compare = compare_vcf_files(job)
+        if compare:
+            local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
+            # remove the HUGH bam file when match
+            if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)          
+            move_to_next_step(job, "match")
+            return False 
     elif job.job_json.get('data_type').startswith('WGS-BWA'):
         compare = compare_file(job)
+        if compare:
+            # if everything was fine, finally move the job json file to the next_step folder
+            move_to_next_step(job, next_step)
+            return True
     else:
         sys.exit('Unknown data type.\nError message: {}'.format(job.job_json.get('data_type')))
 
@@ -227,6 +237,3 @@ def run(job):
         move_to_next_step(job, 'mismatch')
         return False
 
-    # if everything was fine, finally move the job json file to the next_step folder
-    move_to_next_step(job, next_step)
-    return True

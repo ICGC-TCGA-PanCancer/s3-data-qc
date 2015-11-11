@@ -151,13 +151,8 @@ def run(job):
 
     _start_task(job)
 
-    if job.job_json.get('data_type').startswith('WGS-BWA'):
-        file_info = need_to_upload(job)
-    elif job.job_json.get('data_type').endswith('-VCF'):
-        move_to_next_step(job, next_step)
-        return True
-    else:
-        sys.exit('Unknown data type.\nError message: {}'.format(job.job_json.get('data_type')))
+
+    file_info = need_to_upload(job)
 
     if file_info.get('error'): 
         job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({

@@ -213,14 +213,7 @@ def run(job):
 
     _start_task(job)
 
-    if job.job_json.get('data_type').startswith('WGS-BWA'):
-        slice_difference = is_diff(job)
-    elif job.job_json.get('data_type').endswith('-VCF'):
-        slice_difference = False
-    else:
-        sys.exit('Unknown data type.\nError message: {}'.format(job.job_json.get('data_type')))
-
-    if slice_difference: # file does not match
+    if is_diff(job): # file does not match
         move_to_next_step(job, 'mismatch')
         return False
     else:
