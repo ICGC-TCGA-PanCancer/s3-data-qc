@@ -8,6 +8,7 @@ import subprocess
 import calendar
 from ..job_tracker import move_to_next_step, get_job_json
 from ..util import get_md5
+import shutil
 
 
 name = 'downloading'
