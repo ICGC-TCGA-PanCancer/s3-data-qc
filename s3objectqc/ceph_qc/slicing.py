@@ -12,7 +12,7 @@ import shutil
 
 name = 'slicing'
 next_step = None
-s3_bucket_url = 's3://oicr.icgc/data/'
+data_bucket_url = 's3://oicr.icgc/data/'
 
 def get_name():
     global name
@@ -115,7 +115,7 @@ def remote_slicing(bam_id, region, job_dir):
     out_file = region + '.dcctool.sam'
     out_file = out_file.replace(':','-')
     command =   'cd {} && '.format(job_dir) + \
-                'dcc-storage-client view --output-type sam --object-id ' + bam_id + ' ' + \
+                'icgc-storage-client view --output-type sam --object-id ' + bam_id + ' ' + \
                 '--query ' + region + ' > ' + \
                 out_file
 

@@ -55,7 +55,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
 
         if process.returncode:
             # should not exit for just this error, improve it later
-            sys.exit('Unable to download file from s3.\nError message: {}'.format(err))
+            sys.exit('Unable to download file from cloud.\nError message: {}'.format(err))
 
     end_time = int(calendar.timegm(time.gmtime()))
 
