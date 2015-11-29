@@ -8,6 +8,7 @@ import subprocess
 import calendar
 from ..job_tracker import move_to_next_step, get_job_json
 from ..util import get_md5
+import shutil
 
 
 name = 'downloading'
@@ -36,7 +37,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # Only download when file does not already exist.
     # - This is meant more for repeative testing/debugging without
     #   having to download large file over and over again.
-    # - In real world, shouldn't have as each time a new run dir is created 
+    # - In real world, shouldn't have as each time a new run dir is created
     if not os.path.isfile(fpath):
         command =   'cd {} && '.format(job_dir+'/'+gnos_id) + \
                     'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + bucket_url + \
@@ -54,7 +55,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
 
         if process.returncode:
             # should not exit for just this error, improve it later
-            sys.exit('Unable to download file from s3.\nError message: {}'.format(err))
+            sys.exit('Unable to download file from cloud.\nError message: {}'.format(err))
 
     end_time = int(calendar.timegm(time.gmtime()))
 
@@ -77,11 +78,6 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
         if file_name.endswith('.bam') and is_eof_missing(fpath):
             file_info['eof_missing'] = True
             return file_info
-        # debug
-        # if file_name.endswith('.bai'): 
-        #     file_info['file_md5sum'] = get_md5(fpath, True)
-        # else:
-        #     file_info['file_md5sum'] = '13b9efe5445d2578986ef41df95d236f'
         file_info['file_md5sum'] = get_md5(fpath, True)
     
     end_time = int(calendar.timegm(time.gmtime()))
@@ -105,14 +101,69 @@ def is_eof_missing(bam_file):
     else:
         return False
 
+def compare_vcf_files(job):
+    gnos_id = job.job_json.get('gnos_id')
+    job_dir = job.job_dir
+    for f in job.job_json.get('files'):
+        object_id = f.get('object_id')
+        file_name = f.get('file_name')
+        file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
+        mismatch = False
+        if not file_info.get('file_size') == f.get('file_size'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-size-mismatch': file_info.get('file_size')
+            })
+            mismatch = True
+
+        # only need this comparison when file_md5sum was computed
+        if file_info.get('file_md5sum') is not None and \
+           not file_info.get('file_md5sum') == f.get('file_md5sum'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-md5sum-mismatch': file_info.get('file_md5sum')
+            })
+            mismatch = True
+
+        if file_info.get('download_time') is not None:
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-download_time': file_info.get('download_time')
+            })
+
+        if file_info.get('md5sum_time') is not None:
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                file_name + '-md5sum_time': file_info.get('md5sum_time')
+            })
+
+        if mismatch: return False
+
+    return True
+
 
 def compare_file(job):
     # we'd like to do
     # - download bai, check size and md5sum
     # - download bam, check size and md5sum
     gnos_id = job.job_json.get('gnos_id')
-    for f in ['bai_file', 'bam_file', 'xml_file']:
-        job_dir = job.job_dir
+    job_dir = job.job_dir
+
+    # compare xml file
+    f = 'xml_file'
+    object_id = job.job_json.get(f).get('object_id')
+    file_name = job.job_json.get(f).get('file_name')
+    file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
+    mismatch = True
+
+    for repo in job.job_json.get('available_repos'):
+        v = repo.values()[0]
+        if file_info.get('file_md5sum') is not None and file_info.get('file_size') is not None and \
+        file_info.get('file_md5sum') == v.get('file_md5sum') and file_info.get('file_size') == v.get('file_size'):
+            mismatch = False
+            break
+    
+    if mismatch: return False
+
+
+    for f in ['bai_file', 'bam_file']:
+        #job_dir = job.job_dir
         object_id = job.job_json.get(f).get('object_id')
         file_name = job.job_json.get(f).get('file_name')
 
@@ -166,10 +217,24 @@ def run(job):
 
     _start_task(job)
 
-    if not compare_file(job): # file does not match
+    if job.job_json.get('data_type').endswith('-VCF'):
+        compare = compare_vcf_files(job)
+        if compare:
+            local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
+            # remove the HUGH bam file when match
+            if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)          
+            move_to_next_step(job, "match")
+            return False 
+    elif job.job_json.get('data_type').startswith('WGS-BWA'):
+        compare = compare_file(job)
+        if compare:
+            # if everything was fine, finally move the job json file to the next_step folder
+            move_to_next_step(job, next_step)
+            return True
+    else:
+        sys.exit('Unknown data type.\nError message: {}'.format(job.job_json.get('data_type')))
+
+    if not compare: # file does not match
         move_to_next_step(job, 'mismatch')
         return False
 
-    # if everything was fine, finally move the job json file to the next_step folder
-    move_to_next_step(job, next_step)
-    return True

@@ -12,7 +12,7 @@ import shutil
 
 name = 'slicing'
 next_step = None
-s3_bucket_url = 's3://oicr.icgc/data/'
+data_bucket_url = 's3://oicr.icgc/data/'
 
 def get_name():
     global name
@@ -115,7 +115,7 @@ def remote_slicing(bam_id, region, job_dir):
     out_file = region + '.dcctool.sam'
     out_file = out_file.replace(':','-')
     command =   'cd {} && '.format(job_dir) + \
-                'dcc-storage-client view --output-type sam --object-id ' + bam_id + ' ' + \
+                'icgc-storage-client --profile collab view --output-type sam --object-id ' + bam_id + ' ' + \
                 '--query ' + region + ' > ' + \
                 out_file
 
@@ -217,11 +217,6 @@ def run(job):
         move_to_next_step(job, 'mismatch')
         return False
     else:
-        #local_bam_file = os.path.join(job.job_dir,
-                            #     job.job_json.get('bam_file').get('file_name')
-                            # )
-        # remove the HUGH bam file when match
-        #os.remove(local_bam_file)
         local_file_dir = os.path.join(job.job_dir, job.job_json.get('gnos_id'))
         # remove the HUGH bam file when match
         if os.path.exists(local_file_dir): shutil.rmtree(local_file_dir, ignore_errors=True)
