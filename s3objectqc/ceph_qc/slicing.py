@@ -115,7 +115,7 @@ def remote_slicing(bam_id, region, job_dir):
     out_file = region + '.dcctool.sam'
     out_file = out_file.replace(':','-')
     command =   'cd {} && '.format(job_dir) + \
-                'icgc-storage-client --profile collab view --output-type sam --object-id ' + bam_id + ' ' + \
+                'icgc-storage-client --profile aws view --output-type sam --object-id ' + bam_id + ' ' + \
                 '--query ' + region + ' > ' + \
                 out_file
 
