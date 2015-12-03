@@ -40,7 +40,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # - In real world, shouldn't have as each time a new run dir is created
     if not os.path.isfile(fpath):
         command =   'cd {} && '.format(job_dir) + \
-                    'icgc-storage-client --profile collab download --object-id ' + object_id + ' --output-dir ' + gnos_id
+                    'icgc-storage-client --profile aws download --object-id ' + object_id + ' --output-dir ' + gnos_id
 
         process = subprocess.Popen(
                 command,

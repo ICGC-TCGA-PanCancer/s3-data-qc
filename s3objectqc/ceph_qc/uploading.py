@@ -26,7 +26,7 @@ def remove_remote_files(job):
     for f in ['bai_file', 'bam_file', 'xml_file']:
         object_id = job.job_json.get(f).get('object_id')
 
-        command = 'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 rm ' + data_bucket_url + object_id 
+        command = 'aws --profile amazon_pay s3 rm ' + data_bucket_url + object_id 
         process = subprocess.Popen(
                 command,
                 shell=True,
@@ -56,7 +56,7 @@ def need_to_upload(job):
         object_id = job.job_json.get(f).get('object_id')
 
         command =   'cd {} && '.format(job_dir) + \
-                    'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 ls ' + data_bucket_url + \
+                    'aws --profile amazon_pay s3 ls ' + data_bucket_url + \
                     object_id + ' > ' + f + '.ls.out'
 
         process = subprocess.Popen(
@@ -114,7 +114,7 @@ def upload_job(job):
     start_time = int(calendar.timegm(time.gmtime()))
     if generate_manifest(job_dir, gnos_id, job.job_json):
         command =   'cd {} && '.format(job_dir) + \
-                    'icgc-storage-client upload --manifest ' + gnos_id + '.txt'
+                    'icgc-storage-client --profile aws upload --manifest ' + gnos_id + '.txt'
                     
         process = subprocess.Popen(
                 command,
@@ -147,7 +147,7 @@ def copy_meta_file(job):
 
     start_time = int(calendar.timegm(time.gmtime()))
 
-    command = 'aws --endpoint-url https://www.cancercollaboratory.org:9080 s3 cp ' + \
+    command = 'aws --profile amazon_pay s3 cp ' + \
                 data_bucket_url + object_id + ' ' + meta_bucket_url + object_id
                 
     process = subprocess.Popen(
