@@ -84,7 +84,7 @@ def start_a_job(job):
             )
         out, err = process.communicate()
 
-        if process.returncode == 0:
+        if not process.returncode:
             break  # succeeded
         else:
             print('Unable to fetch new job.\nError message: {}\n\nRetrying...'.format(err))
@@ -102,7 +102,8 @@ def _get_used_percent(job):
             stderr=subprocess.PIPE
         )
     out, err = process.communicate()
-    if process.returncode == 0:
+    if not process.returncode:
+        print process.returncode
         used_percent_str = out.rstrip(' /\n').split('\t')[-2]
         used_percent = float(used_percent_str.strip('%'))/100
 
@@ -166,7 +167,7 @@ def save_job_json(job):
                 stderr=subprocess.PIPE
             )
         out, err = process.communicate()
-        if process.returncode == 0:
+        if not process.returncode:
             break  # succeeded
         else:
             print('Unable to save the job json file.\nError message: {}\n\nRetrying...'.format(err))
@@ -212,7 +213,7 @@ def move_to_next_step(job, next_step_name):
             )
         out, err = process.communicate()
 
-        if process.returncode == 0:
+        if not process.returncode:
             break  # succeeded
         else:
             print('Unable to move the job json file.\nError message: {}\n\nRetrying...'.format(err))
