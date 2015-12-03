@@ -31,8 +31,21 @@ def start_a_job(job):
         # first look into retry-jobs directory
         job_source_dir = 'queued'
         job_file = _get_retry_job(job_queue_dir, job.conf.get('run_id'))
+        used_percent = _get_used_percent(job)
+        percent_limit_1 = float(job.conf.get('instance_space_limit_1'))
+        percent_limit_2 = float(job.conf.get('instance_space_limit_2'))
 
-        if job_file:
+        if not used_percent:
+            print('WARNing, unable to get the used space percentage for the instance!')
+            time.sleep(randint(1,10))  # pause a few seconds before retry
+            continue  # try again
+        elif used_percent>percent_limit_2:
+            print('WARNing, Please release the space of the instance!')
+            time.sleep(randint(1,30))  # pause a few seconds before retry
+            continue  # try again
+        elif used_percent>percent_limit_1 and used_percent<=percent_limit_2:
+            job_source_dir = 'retry'
+        elif job_file and used_percent<=percent_limit_1:
             job_source_dir = 'retry'
         else:
             command = 'cd {} && '.format(os.path.join(job_queue_dir, 'queued-jobs')) + \
@@ -47,10 +60,10 @@ def start_a_job(job):
             job_file, err = process.communicate()
             job_file = job_file.rstrip()
 
-            #print('job: {}'.format(job_file))  # for debugging
-            if not job_file:
-                time.sleep(randint(1,10))  # pause a few seconds before retry
-                continue  # try again
+        #print('job: {}'.format(job_file))  # for debugging
+        if not job_file:
+            time.sleep(randint(1,10))  # pause a few seconds before retry
+            continue  # try again
 
         # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
@@ -78,6 +91,25 @@ def start_a_job(job):
             time.sleep(randint(1,10))  # pause a few seconds before retry
 
     return job_file
+
+def _get_used_percent(job):
+    used_percent = None
+    command = 'df -h |grep datastore'
+    process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+    out, err = process.communicate()
+    if process.returncode == 0:
+        used_percent_str = out.rstrip(' /\n').split('\t')[-2]
+        used_percent = float(used_percent_str.strip('%'))/100
+
+    else:
+        print('Unable to get the free space of the instance.\nError message: {}\n\nRetrying...'.format(err))
+    
+    return used_percent    
 
 
 def _get_retry_job(job_queue_dir, run_id):
