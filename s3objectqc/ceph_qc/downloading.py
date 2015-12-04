@@ -30,7 +30,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     }
 
     fpath = os.path.join(job_dir, gnos_id, file_name)
-    if not os.path.isdir(job_dir+'/'+gnos_id): os.mkdir(job_dir+'/'+gnos_id)
+    # if not os.path.isdir(job_dir+'/'+gnos_id): os.mkdir(job_dir+'/'+gnos_id)
 
     start_time = int(calendar.timegm(time.gmtime()))
 
@@ -38,22 +38,23 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # - This is meant more for repeative testing/debugging without
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created
-    if not os.path.isfile(fpath):
-        command =   'cd {} && '.format(job_dir) + \
-                    'icgc-storage-client --profile aws download --object-id ' + object_id + ' --output-dir ' + gnos_id
+    # if not os.path.isfile(fpath):
+    command =   'cd {} && '.format(job_dir) + \
+                'icgc-storage-client --profile aws download --object-id ' + object_id + '--output-dir . --index false --output-layout bundle'
 
-        process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+    process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
 
-        out, err = process.communicate()
+    out, err = process.communicate()
 
-        if process.returncode:
-            # should not exit for just this error, improve it later
-            sys.exit('Unable to download file from cloud.\nError message: {}'.format(err))
+    if process.returncode:
+        # should not exit for just this error, improve it later
+        file_info['error'] = 'icgc client tools download failed'
+        return file_info
 
     end_time = int(calendar.timegm(time.gmtime()))
 
@@ -106,6 +107,13 @@ def compare_vcf_files(job):
         object_id = f.get('object_id')
         file_name = f.get('file_name')
         file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
+        
+        if file_info.get('error'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                'icgc_client_tool-download-error': True
+            })        
+            return False
+
         mismatch = False
         if not file_info.get('file_size') == f.get('file_size'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
@@ -148,6 +156,12 @@ def compare_file(job):
     object_id = job.job_json.get(f).get('object_id')
     file_name = job.job_json.get(f).get('file_name')
     file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
+    if file_info.get('error'):
+        job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+            'icgc_client_tool-download-error': True
+        })        
+        return False
+
     mismatch = True
 
     for repo in job.job_json.get('available_repos'):
@@ -166,7 +180,12 @@ def compare_file(job):
         file_name = job.job_json.get(f).get('file_name')
 
         file_info = download_file_and_get_info(job_dir, object_id, file_name, gnos_id)
-
+        if file_info.get('error'):
+            job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
+                'icgc_client_tool-download-error': True
+            })        
+            return False
+            
         mismatch = False
         if file_info.get('eof_missing'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
