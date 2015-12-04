@@ -39,8 +39,9 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created
     # if not os.path.isfile(fpath):
+
     command =   'cd {} && '.format(job_dir) + \
-                'icgc-storage-client --profile aws download --object-id ' + object_id + '--output-dir . --index false --output-layout bundle'
+                'icgc-storage-client --profile aws download --object-id ' + object_id + ' --output-dir . --index false --output-layout bundle'
 
     process = subprocess.Popen(
             command,
@@ -185,7 +186,7 @@ def compare_file(job):
                 'icgc_client_tool-download-error': True
             })        
             return False
-            
+
         mismatch = False
         if file_info.get('eof_missing'):
             job.job_json.get('_runs_').get(job.conf.get('run_id')).get(get_name()).update({
