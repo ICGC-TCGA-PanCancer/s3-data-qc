@@ -45,7 +45,7 @@ def upload_job(job):
     start_time = int(calendar.timegm(time.gmtime()))
     if generate_manifest(job_dir, gnos_id, job.job_json):
         command =   'cd {} && '.format(job_dir) + \
-                    'icgc-storage-client --profile aws upload --force --manifest ' + gnos_id + '.txt'
+                    'icgc-storage-client --profile collab upload --force --manifest ' + gnos_id + '.txt'
                     
         process = subprocess.Popen(
                 command,
@@ -77,7 +77,7 @@ def copy_meta_file(job):
 
     start_time = int(calendar.timegm(time.gmtime()))
 
-    command = 'aws --profile amazon_pay s3 cp ' + \
+    command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 --profile collab s3 cp ' + \
                 data_bucket_url + object_id + ' ' + meta_bucket_url + object_id
                 
     process = subprocess.Popen(

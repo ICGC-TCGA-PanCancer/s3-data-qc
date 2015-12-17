@@ -41,7 +41,7 @@ def download_file_and_get_info(job_dir, object_id, file_name, gnos_id):
     # if not os.path.isfile(fpath):
 
     command =   'cd {} && '.format(job_dir) + \
-                'icgc-storage-client --profile aws download --object-id ' + object_id + ' --output-dir . --index false --output-layout bundle'
+                'icgc-storage-client --profile collab download --object-id ' + object_id + ' --output-dir . --index false --output-layout bundle'
 
     process = subprocess.Popen(
             command,
