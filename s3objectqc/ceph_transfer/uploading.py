@@ -77,7 +77,7 @@ def copy_meta_file(job):
 
     start_time = int(calendar.timegm(time.gmtime()))
 
-    command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 --profile collab s3 cp ' + \
+    command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 s3 cp ' + \
                 data_bucket_url + object_id + ' ' + meta_bucket_url + object_id
                 
     process = subprocess.Popen(

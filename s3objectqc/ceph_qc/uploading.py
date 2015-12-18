@@ -14,6 +14,7 @@ name = 'uploading'
 next_step = 'slicing'
 data_bucket_url = 's3://oicr.icgc/data/'
 meta_bucket_url = 's3://oicr.icgc.meta/metadata/'
+state_bucket_url = 's3://oicr.icgc.state/data/'
 
 def get_name():
     global name
@@ -26,7 +27,7 @@ def remove_remote_files(job):
     for f in ['bai_file', 'bam_file', 'xml_file']:
         object_id = job.job_json.get(f).get('object_id')
 
-        command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 --profile collab s3 rm ' + data_bucket_url + object_id 
+        command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 s3 rm ' + data_bucket_url + object_id 
         process = subprocess.Popen(
                 command,
                 shell=True,
@@ -56,7 +57,7 @@ def need_to_upload(job):
         object_id = job.job_json.get(f).get('object_id')
 
         command =   'cd {} && '.format(job_dir) + \
-                    'aws --endpoint-url https://object.cancercollaboratory.org:9080 --profile collab s3 ls ' + data_bucket_url + \
+                    'aws --endpoint-url https://object.cancercollaboratory.org:9080 s3 ls ' + state_bucket_url + \
                     object_id + ' > ' + f + '.ls.out'
 
         process = subprocess.Popen(
@@ -147,7 +148,7 @@ def copy_meta_file(job):
 
     start_time = int(calendar.timegm(time.gmtime()))
 
-    command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 --profile collab s3 cp ' + \
+    command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 s3 cp ' + \
                 data_bucket_url + object_id + ' ' + meta_bucket_url + object_id
                 
     process = subprocess.Popen(
