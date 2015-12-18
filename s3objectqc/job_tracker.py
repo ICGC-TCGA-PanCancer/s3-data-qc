@@ -103,7 +103,7 @@ def _get_used_percent(job):
         )
     out, err = process.communicate()
     if not process.returncode:
-        used_percent_str = out.rstrip(' /\n').split()[-2]
+        used_percent_str = out.rstrip(' /\n').split()[-1]
         used_percent = float(used_percent_str.strip('%'))/100
 
     else:
