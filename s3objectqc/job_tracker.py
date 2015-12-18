@@ -94,7 +94,7 @@ def start_a_job(job):
 
 def _get_used_percent(job):
     used_percent = None
-    command = 'df -h |grep datastore'
+    command = 'df -h |grep /dev/vda1'
     process = subprocess.Popen(
             command,
             shell=True,
