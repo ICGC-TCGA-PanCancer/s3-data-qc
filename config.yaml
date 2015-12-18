@@ -11,9 +11,9 @@
 
 # ceph transfer 
 job_type: ceph_transfer
-job_queue_dir: s3-transfer-jobs-prod1
+job_queue_dir: ceph-transfer-jobs-prod1
 
-job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/s3-transfer-operations.git"
+job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/ceph_transfer_ops.git"
 
 keep_running_even_queue_empty: true
 
