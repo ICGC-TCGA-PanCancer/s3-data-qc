@@ -9,6 +9,7 @@ import calendar
 import hashlib
 from ..job_tracker import move_to_next_step, get_job_json
 from ..util import get_md5
+from random import randint
 
 
 name = 'downloading'
