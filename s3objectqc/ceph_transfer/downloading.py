@@ -65,22 +65,26 @@ def download_datafiles(gnos_repo, gnos_id, job_dir, file_name):
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created 
     url = gnos_repo + 'cghub/data/analysis/download/' + gnos_id
-    command =   'cd {} && '.format(job_dir) + \
-                'gtdownload -l gtdownload.log -c ' + gnos_key + ' ' + url
+    for i in range(10):
+        command =   'cd {} && '.format(job_dir) + \
+                    'gtdownload -l gtdownload.log -c ' + gnos_key + ' ' + url
 
-    process = subprocess.Popen(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+        process = subprocess.Popen(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
 
-    out, err = process.communicate()
+        out, err = process.communicate()
 
-    if process.returncode:
-        # should not exit for just this error, improve it later
-        #sys.exit('Unable to download file from gnos.\nError message: {}'.format(err))
+        if not process.returncode:
+            file_info.pop('error', None)
+            break
+
         file_info['error'] = 'gtdownload failed'
+        time.sleep(randint(1,10))  # pause a few seconds before retry
+
     end_time = int(calendar.timegm(time.gmtime()))
     file_info['download_time'] = end_time - start_time
     return file_info
