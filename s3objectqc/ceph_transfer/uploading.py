@@ -71,14 +71,17 @@ def upload_job(job):
 
 def copy_meta_file(job):
     file_info = {}
+    job_dir = job.job_dir
+
     for f in job.job_json.get('files'):
         if not f.get('file_name').endswith('.xml'): continue
+        file_path = os.path.join(job_dir, gnos_id, f.get('file_name'))
         object_id = f.get('object_id')
 
     start_time = int(calendar.timegm(time.gmtime()))
 
     command = 'aws --endpoint-url https://object.cancercollaboratory.org:9080 s3 cp ' + \
-                data_bucket_url + object_id + ' ' + meta_bucket_url + object_id
+                file_path + ' ' + meta_bucket_url + object_id
                 
     process = subprocess.Popen(
             command,
