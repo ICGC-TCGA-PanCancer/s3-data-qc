@@ -66,9 +66,9 @@ def download_datafiles(gnos_repo, gnos_id, job_dir, file_name):
     #   having to download large file over and over again.
     # - In real world, shouldn't have as each time a new run dir is created 
     url = gnos_repo + 'cghub/data/analysis/download/' + gnos_id
-    for i in range(10):
+    for i in range(5):
         command =   'cd {} && '.format(job_dir) + \
-                    'gtdownload -l gtdownload.log -c ' + gnos_key + ' ' + url
+                    'gtdownload -l gtdownload.log -c ' + gnos_key + ' -k 5 ' + url
 
         process = subprocess.Popen(
                 command,
