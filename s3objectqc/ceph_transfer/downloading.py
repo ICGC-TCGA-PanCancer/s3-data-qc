@@ -68,7 +68,7 @@ def download_datafiles(gnos_repo, gnos_id, job_dir, file_name):
     url = gnos_repo + 'cghub/data/analysis/download/' + gnos_id
     for i in range(5):
         command =   'cd {} && '.format(job_dir) + \
-                    'gtdownload -l gtdownload.log -c ' + gnos_key + ' -k 5 ' + url
+                    'gtdownload -l gtdownload.log -c ' + gnos_key + ' ' + url
 
         process = subprocess.Popen(
                 command,
