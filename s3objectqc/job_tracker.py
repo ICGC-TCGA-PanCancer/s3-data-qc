@@ -3,7 +3,7 @@ import os
 import sys
 import glob
 import json
-from random import randint
+from random import random
 import time
 import calendar
 
@@ -13,7 +13,7 @@ def start_a_job(job):
 
     job_file = ''
 
-    for i in range(5): # try at most 5 times
+    while True: # try until succeed
         # step 1: syn up with github
         command = 'cd {} && '.format(job_queue_dir) + \
                   'git checkout master && ' + \
@@ -37,11 +37,11 @@ def start_a_job(job):
 
         if not used_percent:
             print('WARNing, unable to get the used space percentage for the instance!')
-            time.sleep(randint(1,10))  # pause a few seconds before retry
+            time.sleep(random())  # pause a few seconds before retry
             continue  # try again
         elif used_percent>percent_limit_2:
             print('WARNing, Please release the space of the instance!')
-            time.sleep(randint(1,30))  # pause a few seconds before retry
+            time.sleep(random())  # pause a few seconds before retry
             continue  # try again
         elif used_percent>percent_limit_1 and used_percent<=percent_limit_2:
             job_source_dir = 'retry'
@@ -62,7 +62,7 @@ def start_a_job(job):
 
         #print('job: {}'.format(job_file))  # for debugging
         if not job_file:
-            time.sleep(randint(1,10))  # pause a few seconds before retry
+            time.sleep(random())  # pause a few seconds before retry
             continue  # try again
 
         # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
@@ -88,7 +88,7 @@ def start_a_job(job):
             break  # succeeded
         else:
             print('Unable to fetch new job.\nError message: {}\n\nRetrying...'.format(err))
-            time.sleep(randint(1,10))  # pause a few seconds before retry
+            time.sleep(random())  # pause a few seconds before retry
 
     return job_file
 
@@ -150,7 +150,7 @@ def save_job_json(job):
     with open(json_file, 'w') as f:
         f.write(json.dumps(job_json, indent=4, sort_keys=True))
 
-    for i in range(5): # try at most 5 times
+    while True: # try untill succeed
         command = 'cd {}'.format(conf.get('job_queue_dir'))
 
         if i == 0:
@@ -170,7 +170,7 @@ def save_job_json(job):
             break  # succeeded
         else:
             print('Unable to save the job json file.\nError message: {}\n\nRetrying...'.format(err))
-            time.sleep(randint(1,10))  # pause a few seconds before retry
+            time.sleep(random())  # pause a few seconds before retry
 
 
 def move_to_next_step(job, next_step_name):
@@ -192,7 +192,7 @@ def move_to_next_step(job, next_step_name):
 
     print ('move from {} to {}'.format(current_step_name, next_step_name))
 
-    for i in range(5): # try at most 5 times
+    while True: # try untill succeed
 
         command = 'cd {} && '.format(job_queue_dir) + \
                   'git checkout master && ' + \
@@ -216,4 +216,4 @@ def move_to_next_step(job, next_step_name):
             break  # succeeded
         else:
             print('Unable to move the job json file.\nError message: {}\n\nRetrying...'.format(err))
-            time.sleep(randint(1,10))  # pause a few seconds before retry
+            time.sleep(random())  # pause a few seconds before retry
