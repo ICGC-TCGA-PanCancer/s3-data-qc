@@ -10,10 +10,11 @@ import calendar
 def start_a_job(job):
     job_queue_dir = job.conf.get('job_queue_dir')
     next_step_name = job.tasks[0].get_name() # first task of the job
+    max_times = job.conf.get('max_times')
 
     job_file = ''
 
-    for i in range(5): # try at most 5 times
+    for i in range(max_times): # try at most 5 times
         # step 1: syn up with github
         command = 'cd {} && '.format(job_queue_dir) + \
                   'git checkout master && ' + \
@@ -142,6 +143,7 @@ def save_job_json(job):
     current_step_name = job.tasks[0].get_name()
     job_json_file_name = job.job_json_file
     job_json = job.job_json
+    max_times = job.conf.get('max_times')
 
     json_file = os.path.join(conf.get('job_queue_dir'),
                                 current_step_name + '-jobs',
@@ -150,7 +152,7 @@ def save_job_json(job):
     with open(json_file, 'w') as f:
         f.write(json.dumps(job_json, indent=4, sort_keys=True))
 
-    for i in range(5): # try at most 5 times
+    for i in range(max_times): # try at most 5 times
         command = 'cd {}'.format(conf.get('job_queue_dir'))
 
         if i == 0:
@@ -177,6 +179,7 @@ def move_to_next_step(job, next_step_name):
     conf = job.conf
     current_step_name = job.tasks[0].get_name()
     job_json_file_name = job.job_json_file
+    max_times = job.conf.get('max_times')
 
     start_time = job.job_json.get('_runs_').get(job.conf.get('run_id')).get(current_step_name).get('start')
     end_time = int(calendar.timegm(time.gmtime()))
@@ -192,7 +195,7 @@ def move_to_next_step(job, next_step_name):
 
     print ('move from {} to {}'.format(current_step_name, next_step_name))
 
-    for i in range(5): # try at most 5 times
+    for i in range(max_times): # try at most 5 times
 
         command = 'cd {} && '.format(job_queue_dir) + \
                   'git checkout master && ' + \
