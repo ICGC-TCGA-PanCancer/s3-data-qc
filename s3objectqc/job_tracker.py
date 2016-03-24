@@ -74,7 +74,7 @@ def start_a_job(job):
             json_obj.get('_workers_').append(job.conf.get('run_id'))
         else:
             json_obj['_workers_'] = [ job.conf.get('run_id') ]
-        with open(json_file) as f: f.write(json.dumps(json_obj, indent=4, sort_keys=True))
+        with open(json_file, 'w') as f: f.write(json.dumps(json_obj, indent=4, sort_keys=True))
 
         # step 4: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
