@@ -66,11 +66,19 @@ def start_a_job(job):
             time.sleep(random())  # pause a few seconds before retry
             continue  # try again
 
-        # step 3: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
+        # step 3: update the job JSON file to add runner ID
+        json_file = os.path.join(job_queue_dir, job_source_dir + '-jobs', job_file)
+        with open(json_file) as data_file: json_obj = json.load(data_file)
+
+        if json_obj.get('_workers_'):
+            json_obj.get('_workers_').append(job.conf.get('run_id'))
+        else:
+            json_obj['_workers_'] = [ job.conf.get('run_id') ]
+        with open(json_file) as f: f.write(json.dumps(json_obj, indent=4, sort_keys=True))
+
+        # step 4: git move the job file from queued-jobs to downloading-jobs folder, then commit and push
         command = 'cd {} && '.format(os.path.join(job_queue_dir)) + \
-                  'git checkout master && ' + \
-                  'git reset --hard origin/master && ' + \
-                  'git pull &&' + \
+                  'git add . &&' + \
                   'git mv {} {} && '.format(os.path.join(job_queue_dir, job_source_dir + '-jobs', job_file),
                                             os.path.join(job_queue_dir, next_step_name + '-jobs', job_file)) + \
                   'git commit -m \'{} to {}: {} in {}\' && '.format(job_source_dir,
