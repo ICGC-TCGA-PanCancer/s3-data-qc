@@ -1,0 +1,81 @@
+
+#- hosts: remote_worker
+#  sudo: True
+#  vars:
+#      single_node_lvm: True
+#      shared_storage_system: lvm
+#      vendor_data: /datastore
+#      lvm_device_whitelist: /dev/xvdb
+#  include: roles/storage/common/tasks/play_deploy_lvm_storage.yml
+#
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: update_code
+      shell: "{{ item }}"
+      args:
+          chdir: /home/ubuntu/s3-data-qc
+      with_items:
+         - ssh-keyscan github.com >> /home/ubuntu/.ssh/known_hosts
+         - git pull
+         - git checkout ceph 
+         - git pull
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: update_code
+      shell: "{{ item }}"
+      args:
+          chdir: /home/ubuntu/ceph-transfer
+      with_items:
+        - rm -rf run*
+        - perl -nae 's/ceph-transfer-jobs-prod1/ceph-transfer-jobs-rna-seq/; print' /home/ubuntu/s3-data-qc/config.yaml > /home/ubuntu/ceph-transfer/config1.yaml
+        - perl -nae 's/ceph_qc/ceph_transfer/; print' /home/ubuntu/ceph-transfer/config1.yaml > /home/ubuntu/ceph-transfer/config.yaml
+
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: update_icgc_client_tools
+      shell: "{{ item }}"
+      args:
+          chdir: /home/ubuntu/dcc-client-tools
+      with_items:
+         - wget -O icgc-storage-client.tar.gz https://dcc.icgc.org/api/v1/ui/software/icgc-storage-client/1.0.19
+         - tar -xvzf icgc-storage-client.tar.gz
+         - rm -rf dcc-client-tools
+         - ln -s icgc-storage-client-1.0.12/ dcc-client-tools
+         - perl -nae 's/# accessToken=/accessToken=9bf0ebe6-3007-4124-987c-e9db24760b5f/; print' /home/ubuntu/dcc-client-tools/dcc-client-tools/conf/application.properties > /home/ubuntu/tmp
+         - echo 'transport.memory=4' >> /home/ubuntu/tmp
+         - echo 'logging.level.org.springframework.retry=DEBUG' >> /home/ubuntu/tmp
+         - echo 'logging.level.org.icgc.dcc.storage.client=DEBUG' >> /home/ubuntu/tmp
+         # - echo 'transport.fileFrom=test' >> /home/ubuntu/tmp
+         - mv /home/ubuntu/tmp /home/ubuntu/dcc-client-tools/dcc-client-tools/conf/application.properties
+
+
+
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: start_worker
+      shell: "nohup /home/ubuntu/.local/bin/s3objectqc /home/ubuntu/ceph-transfer/config.yaml >/home/ubuntu/ceph-transfer/transfer.log 2>&1 &"
+      args:
+          chdir: /home/ubuntu/ceph-transfer
+      environment:
+          PATH: /home/ubuntu/dcc-client-tools/dcc-client-tools/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+      async: 15
+      poll: 0
+
+
+

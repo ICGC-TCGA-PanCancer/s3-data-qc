@@ -1,0 +1,70 @@
+
+- hosts: ec2_worker
+  sudo: True
+  vars:
+      single_node_lvm: True
+      shared_storage_system: lvm
+      vendor_data: /datastore
+      lvm_device_whitelist: /dev/xvdb
+  include: roles/storage/common/tasks/play_deploy_lvm_storage.yml
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: update_code
+      shell: "{{ item }}"
+      args:
+          chdir: /home/ubuntu/s3-data-qc
+      with_items:
+         - git pull
+         - git checkout aws 
+         - git pull
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: update_icgc_client_tools
+      shell: "{{ item }}"
+      args:
+          chdir: /home/ubuntu/icgc-tools
+      with_items:
+         - wget -O icgc-storage-client.tar.gz https://seqwaremaven.oicr.on.ca/artifactory/dcc-release/org/icgc/dcc/icgc-storage-client/1.0.12/icgc-storage-client-1.0.12-dist.tar.gz
+         - tar -xvzf icgc-storage-client.tar.gz
+         - rm -r icgc-tools
+         - ln -s icgc-storage-client-1.0.12/ icgc-tools
+         - perl -nae 's/# accessToken=/accessToken=9bf0ebe6-3007-4124-987c-e9db24760b5f/; print' /home/ubuntu/icgc-tools/icgc-tools/conf/application.properties > /home/ubuntu/tmp
+         - echo 'transport.memory=1' >> /home/ubuntu/tmp
+         - echo 'logging.level.org.springframework.retry=DEBUG' >> /home/ubuntu/tmp
+         - echo 'logging.level.org.icgc.dcc.storage.client=DEBUG' >> /home/ubuntu/tmp
+         # - echo 'transport.fileFrom=test' >> /home/ubuntu/tmp
+         - mv /home/ubuntu/tmp /home/ubuntu/icgc-tools/icgc-tools/conf/application.properties
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: prepare_work_dir
+      shell: "{{ item }}"
+      with_items:
+        - sudo mkdir -p /datastore/s3-data-qc
+        - sudo chown -R ubuntu:ubuntu /datastore/s3-data-qc
+        - perl -nae 's/s3-transfer-jobs-prod1/s3-transfer-jobs-rna-seq/; print' /home/ubuntu/s3-data-qc/config.yaml > /datastore/s3-data-qc/config.yaml
+        # - ssh-keyscan github.com >> /home/ubuntu/.ssh/known_hosts
+        # - echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVUz+up7s/ZdO+R3MwsaOKmbVsgXygk75e0MgyRjPZpCBOjCvhkaRJardUk6rF6CTh7QPG/GFL6yzkuAUdvTEeaaxcmZt+3gi/S+xHnogpV7z3rOdGFTJYMJf3X9BIMCCjUZJbTJbHW28xc7GmqyhJP9MOrTEyF58msdMnq6BGY7evCa1GP4O1rwTEOY0zF5lcqM6Osz64CVtafPVLNF6QJg7OD9bgNTE5X0kHIyyYB7BTH06fmqOYqtO4Q7VZ68afBwmlZu0rt091mDlZqcYlcS35aQhbcrAupch6lqW5HVLuncFupqqFnejRY0kAZ+ZoIyrZb746rGn6OdnH1F87' >> /home/ubuntu/.ssh/authorized_keys
+
+- hosts: ec2_worker
+  remote_user: ubuntu
+  sudo: True
+  sudo_user: ubuntu
+  tasks:
+    - name: start_worker
+      shell: "nohup /home/ubuntu/.local/bin/s3objectqc /datastore/s3-data-qc/config.yaml >/datastore/s3-data-qc/s3objectqc.log 2>&1 &"
+      environment:
+          PATH: /home/ubuntu/icgc-tools/icgc-tools/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+      async: 15
+      poll: 0

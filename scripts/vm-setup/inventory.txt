@@ -1,0 +1,1 @@
+ec2_worker      ansible_ssh_port=22     ansible_ssh_host=54.235.179.46     ansible_ssh_user=ubuntu     ansible_ssh_private_key_file=~/.ssh/aws.pem
