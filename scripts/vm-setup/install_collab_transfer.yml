@@ -53,7 +53,7 @@
          - tar -xvzf icgc-storage-client.tar.gz
          - rm -rf dcc-client-tools
          - ln -s icgc-storage-client-1.0.12/ dcc-client-tools
-         - perl -nae 's/# accessToken=/accessToken=9bf0ebe6-3007-4124-987c-e9db24760b5f/; print' /home/ubuntu/dcc-client-tools/dcc-client-tools/conf/application.properties > /home/ubuntu/tmp
+         - perl -nae 's/# accessToken=/accessToken=******/; print' /home/ubuntu/dcc-client-tools/dcc-client-tools/conf/application.properties > /home/ubuntu/tmp
          - echo 'transport.memory=4' >> /home/ubuntu/tmp
          - echo 'logging.level.org.springframework.retry=DEBUG' >> /home/ubuntu/tmp
          - echo 'logging.level.org.icgc.dcc.storage.client=DEBUG' >> /home/ubuntu/tmp
