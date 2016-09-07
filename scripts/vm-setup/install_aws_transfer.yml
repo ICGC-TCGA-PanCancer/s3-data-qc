@@ -54,8 +54,6 @@
         - sudo mkdir -p /datastore/s3-data-qc
         - sudo chown -R ubuntu:ubuntu /datastore/s3-data-qc
         - perl -nae 's/s3-transfer-jobs-prod1/s3-transfer-jobs-rna-seq/; print' /home/ubuntu/s3-data-qc/config.yaml > /datastore/s3-data-qc/config.yaml
-        # - ssh-keyscan github.com >> /home/ubuntu/.ssh/known_hosts
-        # - echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVUz+up7s/ZdO+R3MwsaOKmbVsgXygk75e0MgyRjPZpCBOjCvhkaRJardUk6rF6CTh7QPG/GFL6yzkuAUdvTEeaaxcmZt+3gi/S+xHnogpV7z3rOdGFTJYMJf3X9BIMCCjUZJbTJbHW28xc7GmqyhJP9MOrTEyF58msdMnq6BGY7evCa1GP4O1rwTEOY0zF5lcqM6Osz64CVtafPVLNF6QJg7OD9bgNTE5X0kHIyyYB7BTH06fmqOYqtO4Q7VZ68afBwmlZu0rt091mDlZqcYlcS35aQhbcrAupch6lqW5HVLuncFupqqFnejRY0kAZ+ZoIyrZb746rGn6OdnH1F87' >> /home/ubuntu/.ssh/authorized_keys
 
 - hosts: ec2_worker
   remote_user: ubuntu
