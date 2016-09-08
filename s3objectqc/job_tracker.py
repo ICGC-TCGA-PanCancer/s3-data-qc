@@ -93,9 +93,10 @@ def start_a_job(job):
 
     return job_file
 
+# this is not well-written function to have hardcoded path, quick fix for now
 def _get_used_percent(job):
     used_percent = None
-    command = 'df -h |grep /dev/vda1'
+    command = 'df -h . |grep /dev'
     process = subprocess.Popen(
             command,
             shell=True,
