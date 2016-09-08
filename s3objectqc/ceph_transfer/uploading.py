@@ -32,7 +32,8 @@ def generate_manifest(job_dir, gnos_id, job_json):
             for f in job_json.get('files'):
                 object_id = f.get('object_id')
                 file_name = f.get('file_name')
-                m.write(object_id + '=' + os.path.join(job_dir, gnos_id, file_name) + '\n')
+                file_md5sum = f.get('file_md5sum')
+                m.write('\t'.join([object_id, os.path.join(job_dir, gnos_id, file_name), file_md5sum]) + '\n')
 
     return True
 
