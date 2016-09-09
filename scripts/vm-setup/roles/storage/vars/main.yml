@@ -1,0 +1,8 @@
+---
+brick_file_system: "xfs"
+
+storage_base: "/data"
+# encrypted volumes are used to construct the shared filesystem on top of
+unencrypted_base: "{{storage_base }}/raw/"
+# the brick_base defines where bricks are created and then utilized by shared file systems to store data
+brick_base: "{{ storage_base }}/brick/"

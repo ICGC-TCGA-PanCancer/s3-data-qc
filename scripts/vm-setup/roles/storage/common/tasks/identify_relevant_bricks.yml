@@ -1,0 +1,3 @@
+- name: Storage | Identify relevant bricks
+  shell: find {{ brick_base }}*  -maxdepth 0
+  register: bricks

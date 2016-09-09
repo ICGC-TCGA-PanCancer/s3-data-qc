@@ -1,0 +1,28 @@
+---
+### Storage - first step, install the software wherever we need it
+- hosts: all 
+  sudo: True
+  tasks:
+    - { include_vars: "../../vars/main.yml" }
+    - { include: "../../{{shared_storage_system}}/tasks/install.yml", when: not single_node}
+
+### Storage - second step, configure and start the master
+- hosts: master
+  sudo: True
+  tasks:
+    - { include_vars: "../../vars/main.yml" }
+    - { include: "../../{{shared_storage_system}}/tasks/start.yml", when: not single_node}
+
+### Storage - third step, configure and start the data servers
+- hosts: worker
+  sudo: True
+  tasks:
+    - { include_vars: "../../vars/main.yml" }
+    - { include: "../../{{shared_storage_system}}/tasks/connect.yml", when: not single_node}
+
+### Storage - fourth step, mount directories where needed
+- hosts: all 
+  sudo: True
+  tasks:
+    - { include_vars: "../../vars/main.yml" }
+    - { include: "../../{{shared_storage_system}}/tasks/mount.yml", when: not single_node}

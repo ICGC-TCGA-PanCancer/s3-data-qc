@@ -1,0 +1,20 @@
+---
+# file: roles/storage/lvm/tasks/mount.yml
+
+- name: Storage | Mount lvm volume
+  mount: name=/ecrypted_lower_directory src=/dev/volume_group/logical_volume fstype={{ brick_file_system }} opts=rw,noauto state=mounted
+  register: lvm_mount
+  
+- name: Storage | Unmount ecrypted volume when re-creating lvm_mount
+  mount: name={{ vendor_data }} src=/dev/volume_group/logical_volume fstype={{ brick_file_system }} state=unmounted
+  when: lvm_mount.changed or lvm_volume_created.changed
+
+- name: Storage | Mount lvm volume encrypted
+  mount: 
+    name={{ vendor_data }}
+    src=/ecrypted_lower_directory
+    fstype=ecryptfs 
+    opts="ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_passthrough=n,ecryptfs_enable_filename_crypto=n,no_sig_cache,key=passphrase:passwd={{ 1024 |random}}{{ 1024 |random}}{{ 1024 |random}}{{ 1024 |random}}{{ 1024 |random}}" 
+    state=mounted
+  when: lvm_mount.changed or lvm_volume_created.changed
+

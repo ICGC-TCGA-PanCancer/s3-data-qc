@@ -1,0 +1,120 @@
+---
+# On Linux, this retrieves only the device names as a single column. We can then 
+# use the ansible stdout_lines as a way to iterate through these devices, making
+# sure that each of them has been properly attached. 
+
+# commented out since I ran into http://www.mail-archive.com/ansible-project@googlegroups.com/msg07345.html
+#- name: Storage | Identify unmapped block devices
+#  shell: "lsblk | awk '{ if ($6 == \"disk\") print \"/dev/\"$1 }' | xargs -I {} bash -c 'if [ \"`file -s -b {}`\" == \"data\" ] ; then echo {} ; fi'"
+#  register: glusterfs_storage_block_devices
+
+- name: Storage | Copy script to identify unmapped block devices
+  copy: src=awk_command.sh dest=/etc/awk_command.sh mode=0777
+  
+- name: Storage | Run script to identify unmapped block devices
+  shell: bash /etc/awk_command.sh
+  register: glusterfs_storage_block_devices
+ 
+# For legacy reasons, this variable passed in the json is of the format "--whitelist a,c" so we need to strip off the front
+# TODO: There should be a way of doing this following manipulation and filtering using ansible variable filters rather than Bash
+- name: Storage | Extract white list device codes 
+  shell: executable=/bin/bash IN="{{ gluster_device_whitelist }}";arrIN=(${IN//whitelist/ });for i in ${arrIN[1]}; do echo $i; done;
+  register: device_codes
+  
+- name: Storage | Split white list device codes
+  shell: executable=/bin/bash IN="{{ device_codes.stdout }}";arrIN=(${IN//,/ });for i in ${arrIN[@]}; do echo $i; done;
+  register: device_codes_split
+  
+- name: Storage | Unmapped block devices need to pass the whitelist
+  command: echo {{ item[1] }}
+  when: "\"{{ item[1] }}\" == \"/dev/sd{{ item[0] }}\" or \"{{ item[1] }}\" ==  \"/dev/hd{{ item[0] }}\" or \"{{ item[1] }}\" ==  \"/dev/xvd{{ item[0] }}\""
+  with_nested: 
+    - device_codes_split.stdout_lines
+    - glusterfs_storage_block_devices.stdout_lines
+  register: passing_devices
+
+# For those which only say "data", we need to create a file system.
+# Note this time we get a structure that contains a more complex data
+# model with the original item nested. This is done to avoid mangling 
+# existing file systems.
+- name: Storage | Create file system
+  shell: mkfs -t {{ brick_file_system }} {{item.stdout}}
+  when: item.rc is defined and item.rc == 0
+  with_items: passing_devices.results 
+
+# We want to sequentially create mount points for these, and then assign them to disks.
+# We should be safe doing this, as old mount points should be up and the corresponding
+# device won't be tagged as data any more, so they'll have been filtered out when
+# identifying unmapped block devices. 
+- name: Storage | Create mount points
+  file: state=directory path={{ unencrypted_base }}{{ item.1 }}
+  when: item.0.rc is defined and item.0.rc == 0
+  with_together:
+    - passing_devices.results
+    - [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+
+- name: Storage | Mount the device
+  mount: name={{ unencrypted_base }}{{ item.1 }} src={{ item.0.stdout }} fstype={{ brick_file_system }} opts=defaults dump=1 passno=2 state=mounted
+  when: item.0.rc is defined and item.0.rc == 0
+  with_together:
+    - passing_devices.results
+    - [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+    
+# For legacy reasons, this variable passed in the json is of the format "--gluster_directory_path /foo/bar" so we need to strip off the front
+# TODO: There should be a way of doing this following manipulation and filtering using ansible variable filters rather than Bash
+
+- name: Storage | Identify local bricks when required 
+  shell: executable=/bin/bash IN="{{ gluster_directory_path }}";arrIN=(${IN//directorypath/ });for i in ${arrIN[1]}; do echo $i; done;
+  register: local_paths
+  
+- name: Storage | Split directory_path directories
+  shell: executable=/bin/bash IN="{{ local_paths.stdout }}";arrIN=(${IN//,/ });for i in ${arrIN[@]}; do echo $i; done;
+  register: local_paths_split
+  
+- name: Storage | Ensure directory_path directories exist
+  file: state=directory path={{ item }}
+  with_items: local_paths_split.stdout_lines
+
+- name: Storage | Ensure local brick targets exist
+  file: state=directory path={{ unencrypted_base }}
+
+- name: Storage | Link up directories as a special kind of brick
+  file: state=link dest={{ unencrypted_base }}local_{{ item.1 }} src={{ item.0 }}
+  when: item.0
+  with_together:
+    - local_paths_split.stdout_lines
+    - [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+    
+- name: Storage | Install encryption
+  apt: name={{ item }} state=present update_cache=yes cache_valid_time=3600
+  with_items: 
+    - ecryptfs-utils 
+    - xfsprogs
+    
+- name: Storage | Identify relevant bricks to be encrypted
+  shell: find {{ unencrypted_base }}*  -maxdepth 0
+  register: unencrypted_bricks
+  
+- name: Storage | Make directories for encrypted bricks
+  file: state=directory dest={{ brick_base }}{{ item | basename }} 
+  with_items: unencrypted_bricks.stdout_lines 
+
+- name: Storage | Identify unmounted encrypted bricks (mount module fails remount on ansible re-run with ecryptfs mount helper)
+  shell: executable=/bin/bash if ! mountpoint -q {{ brick_base}}{{ item | basename }} ; then echo "{{ item }}"; fi
+  with_items: unencrypted_bricks.stdout_lines 
+  register: passing_unencrypted_bricks
+
+- name: Storage | Mount available bricks as encrypted bricks
+  mount: 
+    name="{{ brick_base }}{{ item.stdout | basename }}" 
+    src="{{ item.stdout }}" 
+    fstype=ecryptfs 
+    opts="ecryptfs_cipher=aes,ecryptfs_key_bytes=16,ecryptfs_passthrough=n,ecryptfs_enable_filename_crypto=n,no_sig_cache,key=passphrase:passwd={{ 1024 |random}}{{ 1024 |random}}{{ 1024 |random}}{{ 1024 |random}}{{ 1024 |random}}" 
+    state=mounted
+  when: item.stdout != ""
+  with_items: passing_unencrypted_bricks.results 
+  
+- name: Storage | Setup permissions for encrypted bricks
+  file: state=directory dest={{ brick_base }}{{ item.stdout | basename }} mode=0777
+  when: item.stdout != ""
+  with_items: passing_unencrypted_bricks.results 

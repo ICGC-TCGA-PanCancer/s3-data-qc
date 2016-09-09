@@ -1,0 +1,2 @@
+---
+lvm_device_whitelist: '/dev/xvdd,/dev/xvde'
