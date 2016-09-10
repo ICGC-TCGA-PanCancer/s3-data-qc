@@ -52,7 +52,6 @@ def download_metadata_xml(gnos_repo, gnos_id, job_dir, file_name):
 
     # TODO: get file size and md5sum
     file_info['file_size'] = os.path.getsize(fpath)
-    os.remove(fpath)
     file_info['file_md5sum'] = hashlib.md5(data).hexdigest()
 
     return file_info     
