@@ -73,6 +73,8 @@ def upload_job(job):
 
 def copy_meta_file(job):
     file_info = {}
+    job_dir = job.job_dir
+    gnos_id = job.job_json.get('gnos_id')
     for f in job.job_json.get('files'):
         if not f.get('file_name').endswith('.xml'): continue
         file_path = os.path.join(job_dir, gnos_id, f.get('file_name'))
