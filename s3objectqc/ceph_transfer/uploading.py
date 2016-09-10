@@ -75,12 +75,13 @@ def copy_meta_file(job):
     file_info = {}
     for f in job.job_json.get('files'):
         if not f.get('file_name').endswith('.xml'): continue
+        file_path = os.path.join(job_dir, gnos_id, f.get('file_name'))
         object_id = f.get('object_id')
 
     start_time = int(calendar.timegm(time.gmtime()))
 
     command = 'aws --profile amazon_pay s3 cp ' + \
-                data_bucket_url + object_id + ' ' + meta_bucket_url + object_id
+                file_path + ' ' + meta_bucket_url + object_id
                 
     process = subprocess.Popen(
             command,
