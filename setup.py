@@ -7,7 +7,12 @@ setup(
     packages=['s3objectqc'],
     install_requires=[
       'pyyaml',
-      'xmltodict'
+      'xmltodict',
+      'requests',
+      'icgconnect'
+    ],
+    dependency_links=[
+      "https://github.com/baminou/icgconnect.git#egg=icgconnect"
     ],
     entry_points='''
     [console_scripts]
