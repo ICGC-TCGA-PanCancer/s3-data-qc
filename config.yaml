@@ -10,6 +10,9 @@
 # job_queue_dir: test-bam_qc
 
 # ceph transfer 
+#job_type: ceph_transfer
+#job_queue_dir: test-egaco-transfer
+
 job_type: egaco_transfer
 job_queue_dir: test-egaco-transfer
 
@@ -18,3 +21,6 @@ job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/ceph_transfer_ops.git"
 keep_running_even_queue_empty: true
 ega_email: 
 ega_password: 
+collab_upload_token: 
+xml_folder_path:
+icgc_storage_client: icgc-storage-client/bin/icgc-storage-client

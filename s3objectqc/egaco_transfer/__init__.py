@@ -1,1 +1,1 @@
-from egaco_transfer import EGACO_TRANSFER
+from job import EGACO_TRANSFER

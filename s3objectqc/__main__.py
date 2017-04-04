@@ -1,5 +1,6 @@
 import sys
 from config import get_config
+import egaco_transfer.job
 
 
 # TODO: add logging support

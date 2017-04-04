@@ -9,10 +9,10 @@ setup(
       'pyyaml',
       'xmltodict',
       'requests',
-      'icgconnect'
+      'icgconnect==0.0.1'
     ],
     dependency_links=[
-      "https://github.com/baminou/icgconnect.git#egg=icgconnect"
+      "https://github.com/baminou/icgconnect/tarball/master#egg=icgconnect-0.0.1"
     ],
     entry_points='''
     [console_scripts]

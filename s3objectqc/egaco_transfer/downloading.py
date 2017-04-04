@@ -33,7 +33,6 @@ def run(job):
     print ('running task: {}'.format(get_name()))
 
     _start_task(job)
-    collab.upload('test')
     print "downloading"
 
     # if everything was fine, finally move the job json file to the next_step folder

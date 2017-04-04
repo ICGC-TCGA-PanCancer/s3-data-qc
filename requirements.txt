@@ -1,0 +1,1 @@
+-e git+https://github.com/baminou/icgconnect@master#egg=icgconnect-0.0.1
