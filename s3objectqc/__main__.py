@@ -1,6 +1,6 @@
 import sys
 from config import get_config
-import ceph_qc
+from ceph_qc.job import Job
 
 
 # TODO: add logging support
