@@ -10,7 +10,7 @@
 # job_queue_dir: test-bam_qc
 
 # ceph transfer 
-job_type: ceph_qc
+job_type: ceph_transfer
 job_queue_dir: ceph-transfer-jobs-rna-seq
 
 job_git_repo: "git@github.com:ICGC-TCGA-PanCancer/ceph_transfer_ops.git"
